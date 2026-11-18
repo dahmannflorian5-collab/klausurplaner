@@ -202,7 +202,7 @@ textarea{min-height:80px;resize:vertical}
   .side{position:fixed;top:auto;bottom:0;left:0;right:0;height:auto;flex-direction:row;justify-content:flex-start;overflow-x:auto;overflow-y:hidden;border-radius:0;padding:5px 4px calc(5px + env(safe-area-inset-bottom,0px));z-index:20}
   .logo,.sp,.sep{display:none}
   .si{width:62px}
-  .si[data-p=kal]{order:1}.si[data-p=auf]{order:2}.si[data-p=mod]{order:3}.si.cl{order:4}.si.aw{order:5}.si[data-p=pru]{order:6}.si[data-p=std]{order:7}.si[data-p=dat]{order:8}#thBtn{order:9}#outBtn{order:10}
+  .si[data-p=kal]{order:1}.si[data-p=auf]{order:2}.si[data-p=mod]{order:3}.si.cl{order:4}.si.aw{order:5}.si[data-p=pru]{order:6}.si[data-p=std]{order:7}.si[data-p=dat]{order:8}.si[data-p=not]{order:7}.si[data-p=push]{order:9}#thBtn{order:9}#outBtn{order:10}
   .hero{height:170px}.hcap p{font-size:12.5px;gap:2px 10px}.glass{height:28px;font-size:12px;padding:0 9px}
   .top{padding:10px 12px}h1{font-size:17px}.flt{padding:8px 12px}
   .cell{min-height:86px;padding:3px}.card{padding:4px}.card .pill,.card small{display:none}.card b{font-size:11px}
@@ -284,6 +284,22 @@ label.chk{display:flex;gap:10px;align-items:center;color:var(--ink);font-size:14
   .hcap{right:14px}
   .stor{margin:12px 12px 0}
 }
+.hjs{display:flex;gap:6px;overflow-x:auto;margin:12px 0 4px}.hjs button{border:1px solid var(--line);background:var(--card);border-radius:999px;padding:6px 13px;font-weight:600;color:var(--mut);cursor:pointer}.hjs button[aria-pressed=true]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.gsum{display:grid;grid-template-columns:1.4fr 1fr .7fr;gap:8px;margin:10px 0 14px}.gsum>div{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:10px 12px}.gsum small{display:block;font-size:12px;color:var(--mut)}.gsum b{font-size:22px}.gsum b span{font-size:12px;color:var(--mut);font-weight:500}
+.gf{background:var(--card);border:1px solid var(--line);border-radius:14px;margin-bottom:8px;overflow:hidden}.gf summary{display:flex;align-items:center;gap:10px;padding:12px 14px;cursor:pointer;list-style:none}.gf summary::-webkit-details-marker{display:none}
+.gf .gd{width:10px;height:10px;border-radius:50%;background:var(--c);flex:none}.gf summary b{flex:1}.gf summary small{color:var(--mut);font-size:12.5px}
+.gf em,.gn em{font-style:normal;font-weight:700;min-width:44px;text-align:center;border-radius:9px;padding:4px 8px;background:color-mix(in srgb,var(--p) 16%,var(--card));color:color-mix(in srgb,var(--p) 80%,var(--ink))}
+.gbar{display:block;height:4px;background:var(--soft);margin:0 14px 6px;border-radius:4px;overflow:hidden}.gbar i{display:block;height:100%}
+.gn{display:flex;align-items:center;gap:10px;padding:9px 14px;border-top:1px solid var(--line);cursor:pointer}.gn>span{flex:1;display:grid}.gn b{font-size:14px;font-weight:600}.gn small{font-size:12px;color:var(--mut)}
+.gnote{display:block;color:var(--mut);font-size:12px;margin:-4px 0 6px;min-height:15px;font-weight:500}
+.hint{font-size:12.5px;color:var(--mut);margin:10px 2px}
+.pbox{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px;margin-top:8px}.pbox p{margin:0 0 8px}.pbox ol{margin:6px 0 0 18px;padding:0;line-height:1.7}
+.prow{display:flex;align-items:center;gap:12px}.prow>span{flex:1;display:grid}.prow small{color:var(--mut);font-size:12.5px}
+.gwrap{padding:14px 20px 30px}.gwrap .hjs{margin-top:2px}
+.gwrap .gsum{max-width:720px}
+.gwrap .gfs{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:10px;align-items:start}
+.gwrap .gf{margin:0}
+.pw{max-width:640px}.psh{font-size:15px;margin:18px 0 8px}
 </style>
 </head>
 <body>
@@ -388,6 +404,17 @@ label.chk{display:flex;gap:10px;align-items:center;color:var(--ink);font-size:14
   </form>
 </dialog>
 
+<dialog id="gdlg">
+  <form id="gf">
+    <h2 id="gft">Neue Note</h2>
+    <div class="r2"><label>Fach<select id="gFach"></select></label><label>Art<select id="gArt"></select></label></div>
+    <label>Titel<input id="gTitel" autocomplete="off" placeholder="z. B. Klausur Kalter Krieg"></label>
+    <div class="r2"><label>Punkte (0–15)<input id="gPkt" inputmode="decimal" required autocomplete="off"></label>
+    <label>Gewicht<select id="gGew"><option value="0.5">½-fach</option><option value="1">1-fach</option><option value="2">2-fach</option><option value="3">3-fach</option></select></label></div><small id="gNote" class="gnote"></small>
+    <label>Datum<input id="gDat" type="date"></label><input type="hidden" id="gEntry">
+    <div class="ft"><button type="button" class="btn" id="gDel" hidden>Löschen</button><button type="button" class="btn" data-x="gdlg">Abbrechen</button><button class="btn pri">Speichern</button></div>
+  </form>
+</dialog>
 <dialog id="sdlg">
   <form id="sf">
     <h2 id="sft">Neue Stunde</h2>
@@ -417,6 +444,8 @@ const TYP = {stunde:['Stunden','#3e63dd'],klausur:['Prüfungen','#e5484d'],aufga
 const ARTEN = {klausur:['Klausur','LK','Test','Kurzkontrolle','Mündliche Prüfung','Präsentation','Komplexe Leistung','Experiment','Rede','VorAbi'], aufgabe:['Hausaufgabe','Abgabe','Aufgabe'], termin:[]};
 const LST = ['LK','Klausur','Abgabe','Präsentation','Komplexe Leistung','Experiment','Rede','VorAbi'];
 const I = {
+  not:'<path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/>',
+  push:'<path d="M6 16V11a6 6 0 0 1 12 0v5l1.5 2h-15z"/><path d="M10 20.5a2 2 0 0 0 4 0"/>',
   kal:'<rect x="3" y="4.5" width="18" height="16" rx="3"/><path d="M3 9.5h18M8 2.5v4M16 2.5v4"/>',
   auf:'<rect x="3.5" y="3.5" width="17" height="17" rx="4"/><path d="m8 12 3 3 5-6"/>',
   pru:'<path d="M7 3.5h7l4 4v13H7z"/><path d="M14 3.5v4h4M10 13h5M10 17h5"/>',
@@ -458,7 +487,7 @@ const lessonTitle = p => { const s = subjOf(p.fach); return /^tests?$/i.test(p.f
 
 /* ---------- Zustand ---------- */
 let sb = null, uid = null, channel = null, started = false, syncing = false, flushing = false, pullTimer = null;
-let entries = [], mods = [], files = [], plan = [], dated = [], untisAt = null, settings = {}, outbox = [], news = [];
+let entries = [], mods = [], files = [], plan = [], dated = [], untisAt = null, settings = {}, outbox = [], news = [], grades = [];
 let cur = day0(new Date()), view = 'woche', page = 'kal', sel = null, editId = null, fty = 'aufgabe', editMod = null, editPid = null;
 let typesOn = {stunde:true, klausur:true, aufgabe:true, termin:true};
 const THEMES = ['auto','light','dark'], TL = {auto:'Auto', light:'Hell', dark:'Dunkel'};
@@ -466,8 +495,8 @@ let theme = ls('kp-theme', 'auto'); if (!TL[theme]) theme = 'auto';
 const mq = matchMedia('(max-width:760px)'); let narrow = mq.matches;
 const ck = () => 'kp2-data-' + uid, ok_ = () => 'kp2-outbox-' + uid;
 
-function saveCache(){ lsw(ck(), JSON.stringify({entries, mods, files, plan, dated, untisAt, settings})); lsw(ok_(), JSON.stringify(outbox)); }
-function loadCache(){ const c = lsj(ck(), {}); entries = c.entries || []; mods = c.mods || []; files = c.files || []; plan = c.plan || []; dated = c.dated || []; untisAt = c.untisAt || null; settings = c.settings || {}; outbox = lsj(ok_(), []); }
+function saveCache(){ lsw(ck(), JSON.stringify({entries, mods, files, plan, dated, untisAt, settings, grades})); lsw(ok_(), JSON.stringify(outbox)); }
+function loadCache(){ const c = lsj(ck(), {}); entries = c.entries || []; mods = c.mods || []; files = c.files || []; plan = c.plan || []; dated = c.dated || []; untisAt = c.untisAt || null; settings = c.settings || {}; grades = c.grades || []; outbox = lsj(ok_(), []); }
 function setSync(t){ $('sync').textContent = t; $('sync').hidden = !t; }
 let tt; function toast(m){ const t = $('toast'); t.textContent = m; t.classList.add('on'); clearTimeout(tt); tt = setTimeout(() => t.classList.remove('on'), 2200); }
 
@@ -508,15 +537,16 @@ async function pull(){
   if (!sb || !uid || !navigator.onLine) return false;
   await flush(); if (outbox.length) return false;
   try {
-    const [a, b, c, d, s] = await Promise.all([
+    const [a, b, c, d, s, g] = await Promise.all([
       sb.from('entries').select('*'), sb.from('modules').select('*'), sb.from('files').select('*'),
       sb.from('planner').select('plan,dated,untis_synced_at').eq('user_id', uid).maybeSingle(),
-      sb.from('user_settings').select('*').eq('user_id', uid).maybeSingle()
+      sb.from('user_settings').select('*').eq('user_id', uid).maybeSingle(),
+      sb.from('grades').select('*')
     ]);
     const err = [a, b, c, d, s].find(r => r.error);
     if (err){ setSync('Server nicht erreichbar · zeige gespeicherten Stand'); return false; }
     if (outbox.length) return false;
-    entries = a.data.map(normE); mods = b.data.map(normM); files = c.data;
+    entries = a.data.map(normE); mods = b.data.map(normM); files = c.data; if (!g.error) grades = g.data.map(normG);
     if (d.data){ plan = Array.isArray(d.data.plan) ? d.data.plan : []; dated = Array.isArray(d.data.dated) ? d.data.dated : []; untisAt = d.data.untis_synced_at; }
     else await sb.from('planner').upsert({user_id: uid}, {onConflict: 'user_id'});
     settings = s.data || {};
@@ -529,7 +559,7 @@ function schedulePull(){ clearTimeout(pullTimer); pullTimer = setTimeout(() => {
 function listen(){
   if (channel || !sb) return;
   channel = sb.channel('kp-' + uid);
-  ['entries','modules','files','planner','user_settings'].forEach(t => channel.on('postgres_changes', {event: '*', schema: 'public', table: t}, schedulePull));
+  ['entries','modules','files','planner','user_settings','grades'].forEach(t => channel.on('postgres_changes', {event: '*', schema: 'public', table: t}, schedulePull));
   channel.subscribe();
 }
 
@@ -853,7 +883,7 @@ function renderFiles(){
 }
 
 function renderSide(){
-  const nav = [['kal','Kalender'],['auf','Aufgaben'],['pru','Prüfungen'],['mod','Module'],['std','Stundenplan'],['dat','Dateien']];
+  const nav = [['kal','Kalender'],['auf','Aufgaben'],['pru','Prüfungen'],['not','Noten'],['mod','Module'],['std','Stundenplan'],['dat','Dateien'],['push','Mitteilungen']];
   $('side').innerHTML = '<div class="logo">KP</div>' + nav.map(n => `<button class="si" data-p="${n[0]}" aria-current="${page === n[0]}">${ic(n[0])}${n[1]}</button>`).join('') +
     '<div class="sp"></div><div class="sep"></div>' +
     `<a class="si aw" href="${esc(ANW)}" target="_blank" rel="noopener" title="Anwesenheit eintragen">${ic('anw')}Anwesenheit</a>` +
@@ -863,9 +893,9 @@ function renderSide(){
 }
 function render(){
   renderSide(); heroCap();
-  $('add').textContent = page === 'mod' ? '+ Neues Modul' : page === 'std' ? '+ Neue Stunde' : '+ Neu';
-  $('add').hidden = page === 'dat';
-  const noCal = page === 'dat' || page === 'mod';
+  $('add').textContent = page === 'mod' ? '+ Neues Modul' : page === 'std' ? '+ Neue Stunde' : page === 'not' ? '+ Neue Note' : '+ Neu';
+  $('add').hidden = page === 'dat' || page === 'push';
+  const noCal = page === 'dat' || page === 'mod' || page === 'not' || page === 'push';
   document.querySelectorAll('#views button').forEach(b => b.setAttribute('aria-pressed', b.dataset.v === view));
   $('views').hidden = noCal || page === 'std';
   $('flt').innerHTML = page === 'std'
@@ -875,9 +905,117 @@ function render(){
   $('prev').hidden = $('next').hidden = $('today').hidden = !nav;
   $('kw').hidden = view !== 'woche' || noCal;
   $('kw').textContent = 'KW ' + kw(cur);
-  $('title').textContent = page === 'dat' ? 'Dateien' : page === 'mod' ? 'Module' : view === 'liste' ? (page === 'auf' ? 'Aufgaben' : page === 'pru' ? 'Prüfungen' : 'Anstehend')
+  $('title').textContent = page === 'dat' ? 'Dateien' : page === 'mod' ? 'Module' : page === 'not' ? 'Noten' : page === 'push' ? 'Mitteilungen' : view === 'liste' ? (page === 'auf' ? 'Aufgaben' : page === 'pru' ? 'Prüfungen' : 'Anstehend')
     : view === 'woche' && narrow ? WD[cur.getDay()] + ', ' + cur.getDate() + '. ' + MN[cur.getMonth()] : MN[cur.getMonth()] + ' ' + cur.getFullYear();
-  if (page === 'dat') renderFiles(); else if (page === 'mod') renderMods(); else if (view === 'woche') renderWeek(); else if (view === 'monat') renderMonth(); else renderList();
+  if (page === 'dat') renderFiles(); else if (page === 'mod') renderMods(); else if (page === 'not') $('body').innerHTML = '<div class="gwrap">' + vNoten() + '</div>'; else if (page === 'push') $('body').innerHTML = '<div class="gwrap pw">' + vPush() + '</div>'; else if (view === 'woche') renderWeek(); else if (view === 'monat') renderMonth(); else renderList();
+}
+
+/* ---------- Noten ---------- */
+const GARTEN = ['Klausur','LK','Test','Mündlich','Präsentation','Komplexe Leistung','Sonstiges'];
+// Halbjahr: Aug–Jan = /I, Feb–Jul = /II; Schuljahr 2026/27 = Klasse 13
+function hjOf(ds){ const d = pd(ds), y = d.getFullYear(), m = d.getMonth() + 1; const sy = m >= 8 ? y : y - 1; return (13 + sy - 2026) + (m >= 8 || m === 1 ? '/I' : '/II'); }
+const normG = r => ({id: r.id, fach: r.fach, titel: r.titel || '', art: r.art || '', punkte: +r.punkte, gewicht: +r.gewicht || 1, datum: r.datum, halbjahr: r.halbjahr || hjOf(r.datum), entry_id: r.entry_id || null});
+const rowG = g => ({id: g.id, user_id: uid, fach: g.fach, titel: g.titel || null, art: g.art || null, punkte: g.punkte, gewicht: g.gewicht, datum: g.datum, halbjahr: g.halbjahr, entry_id: g.entry_id || null});
+const pkt2note = p => (17 - p) / 3;
+const fmtN = n => n.toFixed(1).replace('.', ',');
+const avg = list => { const w = list.reduce((s, g) => s + g.gewicht, 0); return w ? list.reduce((s, g) => s + g.punkte * g.gewicht, 0) / w : null; };
+const pcol = p => p >= 13 ? '#2f9e44' : p >= 10 ? '#3d9a3d' : p >= 7 ? '#c99a00' : p >= 5 ? '#e08a1f' : '#e5484d';
+let gHj = '', editG = null;
+function vNoten(){
+  const hjs = [...new Set(grades.map(g => g.halbjahr).concat([hjOf(ymd(new Date()))]))].sort();
+  if (!gHj || !hjs.includes(gHj)) gHj = hjOf(ymd(new Date()));
+  const list = grades.filter(g => g.halbjahr === gHj);
+  const subs = [...new Set(list.map(g => g.fach))].map(f => [f, avg(list.filter(g => g.fach === f))]).sort((a, b) => b[1] - a[1]);
+  const all = subs.length ? subs.reduce((a, x) => a + x[1], 0) / subs.length : null;
+  return `<div class="hjs">${hjs.map(h => `<button data-hj="${h}" aria-pressed="${h === gHj}">${h}</button>`).join('')}</div>
+    <div class="gsum"><div><small>Schnitt ${esc(gHj)}</small><b>${all == null ? '–' : fmtN(all)} <span>Punkte</span></b></div><div><small>Note</small><b>${all == null ? '–' : fmtN(pkt2note(all))}</b></div><div><small>Noten</small><b>${list.length}</b></div></div>
+    ${subs.length ? '<div class="gfs">' + subs.map(([s, a]) => { const gs = list.filter(g => g.fach === s).sort((x, y) => y.datum.localeCompare(x.datum));
+      return `<details class="gf" style="--c:${SUBJ[s] || '#8b95a3'}"><summary><span class="gd"></span><b>${esc(s)}</b><small>${gs.length} ${gs.length === 1 ? 'Note' : 'Noten'}</small><em style="--p:${pcol(a)}">${fmtN(a)}</em></summary>
+        <span class="gbar"><i style="width:${a / 15 * 100}%;background:${pcol(a)}"></i></span>
+        ${gs.map(g => `<div class="gn" data-g="${g.id}" role="button" tabindex="0"><span><b>${esc(g.titel || g.art || 'Note')}</b><small>${[g.art && g.titel ? esc(g.art) : '', dshort(g.datum), g.gewicht !== 1 ? String(g.gewicht).replace('.', ',') + '-fach' : ''].filter(Boolean).join(' · ')}</small></span><em style="--p:${pcol(g.punkte)}">${String(g.punkte).replace('.', ',')}</em></div>`).join('')}</details>`; }).join('') + '</div>'
+      : '<p class="empty">Noch keine Noten für dieses Halbjahr. Tippe auf +, um deine erste Note einzutragen.</p>'}
+    <p class="hint">Der Schnitt pro Fach ist gewichtet (z. B. Klausur doppelt). Der Gesamtschnitt ist der Mittelwert der Fächer. Note = (17 − Punkte) ÷ 3.</p>`;
+}
+function openGrade(id, pre){
+  const g = id ? grades.find(x => x.id === id) : null; editG = g ? g.id : null;
+  const subs = Object.keys(SUBJ);
+  $('gFach').innerHTML = subs.map(s => `<option>${s}</option>`).join('');
+  $('gArt').innerHTML = GARTEN.map(a => `<option>${a}</option>`).join('');
+  $('gft').textContent = g ? 'Note bearbeiten' : 'Neue Note';
+  $('gFach').value = g ? g.fach : (pre && SUBJ[pre.fach] ? pre.fach : subs[0]);
+  $('gArt').value = g ? (GARTEN.includes(g.art) ? g.art : 'Sonstiges') : (pre && GARTEN.includes(pre.art) ? pre.art : 'Klausur');
+  $('gTitel').value = g ? g.titel : (pre && pre.titel) || '';
+  $('gPkt').value = g ? String(g.punkte).replace('.', ',') : '';
+  $('gGew').value = g ? String(g.gewicht) : ($('gArt').value === 'Klausur' ? '2' : '1');
+  $('gDat').value = g ? g.datum : (pre && pre.datum) || ymd(new Date());
+  $('gEntry').value = g ? (g.entry_id || '') : (pre && pre.entry_id) || '';
+  $('gDel').hidden = !g; delete $('gDel').dataset.sure; $('gDel').textContent = 'Löschen';
+  gPrev(); $('gdlg').showModal();
+}
+function gPrev(){ const p = parseFloat(String($('gPkt').value).replace(',', '.')); $('gNote').textContent = isNaN(p) || p < 0 || p > 15 ? '' : 'entspricht Note ' + fmtN(pkt2note(p)); }
+$('gPkt').oninput = gPrev;
+$('gArt').onchange = () => { if (!editG) $('gGew').value = $('gArt').value === 'Klausur' ? '2' : '1'; };
+$('gf').onsubmit = ev => {
+  ev.preventDefault();
+  const p = parseFloat(String($('gPkt').value).replace(',', '.'));
+  if (isNaN(p) || p < 0 || p > 15){ toast('Punkte zwischen 0 und 15 eintragen'); return; }
+  const o = {fach: $('gFach').value, art: $('gArt').value, titel: $('gTitel').value.trim(), punkte: Math.round(p * 10) / 10, gewicht: +$('gGew').value, datum: $('gDat').value || ymd(new Date()), entry_id: $('gEntry').value || null};
+  o.halbjahr = hjOf(o.datum);
+  let g = editG && grades.find(x => x.id === editG);
+  if (g) Object.assign(g, o); else { g = {id: crypto.randomUUID(), ...o}; grades.push(g); }
+  queue({k:'up', t:'grades', row: rowG(g)}); gHj = g.halbjahr; $('gdlg').close(); if (page !== 'not') setPage('not'); else render(); toast('Note gespeichert');
+};
+$('gDel').onclick = () => {
+  const b = $('gDel'); if (!b.dataset.sure){ b.dataset.sure = 1; b.textContent = 'Wirklich löschen?'; return; }
+  grades = grades.filter(x => x.id !== editG); queue({k:'del', t:'grades', id: editG}); $('gdlg').close(); render(); toast('Note gelöscht');
+};
+
+/* ---------- Push-Mitteilungen ---------- */
+const VAPID = 'BJQhW9V8lzWtfkV0EVauxSul3jr5wuXxWUD32yfzYC3KZ7K5aqRCUv_yDdCGvD0tl57ft9cMxnfdC_JVRseKjRQ';
+const pushOk = () => 'serviceWorker' in navigator && 'PushManager' in window && 'Notification' in window;
+const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+const standalone = () => matchMedia('(display-mode: standalone)').matches || navigator.standalone === true;
+let pushSub = null, pushBusy = false, pushMsg = '';
+const b64u = s => { const p = '='.repeat((4 - s.length % 4) % 4), b = atob((s + p).replace(/-/g, '+').replace(/_/g, '/')); return Uint8Array.from(b, c => c.charCodeAt(0)); };
+async function pushState(){ if (!pushOk()) return null; try { const r = await navigator.serviceWorker.ready; pushSub = await r.pushManager.getSubscription(); } catch(e){ pushSub = null; } return pushSub; }
+async function pushOn(){
+  if (pushBusy) return; pushBusy = true; pushMsg = 'Wird eingerichtet …'; render();
+  try {
+    if (!navigator.onLine) throw new Error('Zum Einschalten brauchst du Internet.');
+    const perm = await Notification.requestPermission();
+    if (perm !== 'granted') throw new Error(perm === 'denied' ? 'Mitteilungen sind für diese Seite blockiert. Erlaube sie in den Einstellungen deines Handys.' : 'Keine Erlaubnis erteilt.');
+    const reg = await navigator.serviceWorker.ready;
+    pushSub = await reg.pushManager.getSubscription() || await reg.pushManager.subscribe({userVisibleOnly: true, applicationServerKey: b64u(VAPID)});
+    const j = pushSub.toJSON();
+    const r = await sb.from('push_subs').upsert({endpoint: j.endpoint, p256dh: j.keys.p256dh, auth: j.keys.auth, geraet: isIOS ? 'iPhone' : /Android/.test(navigator.userAgent) ? 'Android' : 'Browser'}, {onConflict: 'endpoint'});
+    if (r.error) throw new Error(r.error.message);
+    pushMsg = 'Aktiv auf diesem Gerät.'; toast('Mitteilungen eingeschaltet');
+  } catch(e){ pushMsg = e.message || String(e); }
+  pushBusy = false; render();
+}
+async function pushOff(){
+  pushBusy = true; render();
+  try { if (pushSub){ const ep = pushSub.endpoint; await pushSub.unsubscribe(); await sb.from('push_subs').delete().eq('endpoint', ep); } pushSub = null; pushMsg = 'Ausgeschaltet.'; } catch(e){ pushMsg = e.message || String(e); }
+  pushBusy = false; render();
+}
+async function pushTest(){
+  pushMsg = 'Sende Test …'; render();
+  try { const { data, error } = await sb.functions.invoke('push', { body: { action: 'test' } }); if (error) throw error; pushMsg = data && data.sent ? 'Test gesendet – die Mitteilung sollte gleich kommen.' : 'Kein Gerät gefunden. Schalte die Mitteilungen bitte neu ein.'; }
+  catch(e){ pushMsg = 'Test fehlgeschlagen: ' + (e.message || e); }
+  render();
+}
+function vPush(){
+  const top = '';
+  if (isIOS && !standalone()) return top + `<div class="pbox"><b>Erst zum Home-Bildschirm hinzufügen</b><p style="margin-top:6px">Auf dem iPhone kommen Mitteilungen nur, wenn der Klausurplaner als App installiert ist:</p><ol><li>In Safari unten auf <b>Teilen</b> tippen</li><li><b>Zum Home-Bildschirm</b> wählen</li><li>Die App vom Home-Bildschirm öffnen und hier wieder „Mitteilungen“ antippen</li></ol></div>`;
+  if (!pushOk()) return top + '<p class="empty">Dieser Browser kann keine Push-Mitteilungen empfangen.</p>';
+  const on = !!pushSub && Notification.permission === 'granted';
+  return top + `<div class="pbox"><div class="prow"><span><b>${on ? 'Eingeschaltet' : 'Ausgeschaltet'}</b><small>${esc(pushMsg || (on ? 'Aktiv auf diesem Gerät.' : 'Für dieses Gerät noch nicht aktiviert.'))}</small></span>
+    <button class="btn ${on ? '' : 'pri'}" id="${on ? 'pushOff' : 'pushOn'}" ${pushBusy ? 'disabled' : ''}>${on ? 'Ausschalten' : 'Einschalten'}</button></div>
+    ${on ? '<button class="btn" id="pushTest" style="width:100%;margin-top:10px">Test-Mitteilung senden</button>' : ''}</div>
+    <h3 class="psh">Wann kommt was?</h3>
+    <div class="pbox"><p><b>6:30 Uhr</b> – Überblick für heute: Prüfungen, Abgaben, Termine, ausfallende Stunden und Notizen aus WebUntis.</p>
+    <p><b>19:30 Uhr</b> – Was morgen ansteht, dazu Prüfungen in 3 Tagen und in einer Woche.</p>
+    <p class="hint" style="margin:0">Gibt es nichts, kommt auch keine Mitteilung. Vorläufige Termine werden nicht gemeldet.</p></div>`;
 }
 
 /* ---------- Detailpanel ---------- */
@@ -912,6 +1050,7 @@ function drawDr(){
   if (e.thema) rows.push(['Thema', esc(e.thema)]);
   if (e.typ === 'klausur') rows.push(['Vorbereitung', `<select data-stand="${e.id}">${['Nicht begonnen','In Arbeit','Fertig'].map(o => `<option${o === e.stand ? ' selected' : ''}>${o}</option>`).join('')}</select>`]);
   if (e.ergebnis) rows.push(['Ergebnis', '<b>' + esc(e.ergebnis) + '</b>']);
+  if (e.typ === 'klausur'){ const gg = grades.find(g => g.entry_id === e.id); rows.push(['Note', gg ? `<button class="btn" data-g="${gg.id}">${String(gg.punkte).replace('.', ',')} Punkte · bearbeiten</button>` : `<button class="btn" data-newgrade="${e.id}">+ Note eintragen</button>`]); }
   if (e.typ === 'aufgabe') rows.push(['Status', `<label style="display:flex;gap:8px;align-items:center;color:var(--ink);font-size:14px;--c:${col(e)}">${cbx(e)}${e.done ? 'Erledigt' : 'Offen'}</label>`]);
   if (e.vorlaeufig) rows.push(['Termin', '<span class="vlt">Steht noch nicht fest</span>']);
   if (linkOf(e)) rows.push(['Link', `<a class="lnk" href="${esc(linkOf(e)[1])}" target="_blank" rel="noopener">${esc(linkOf(e)[0])} ↗</a>`]);
@@ -1096,12 +1235,12 @@ function setPage(p){
   if (p === 'auf'){ view = 'liste'; typesOn = {stunde:false, klausur:false, aufgabe:true, termin:false}; }
   if (p === 'pru'){ view = 'liste'; typesOn = {stunde:false, klausur:true, aufgabe:false, termin:false}; }
   if (p === 'std'){ view = 'woche'; typesOn = {stunde:true, klausur:false, aufgabe:false, termin:false}; }
-  closeDr(); render(); window.scrollTo({top: 0});
+  closeDr(); render(); window.scrollTo({top: 0}); if (p === 'push') pushState().then(render);
 }
 function step(dir){ if (view === 'monat') cur = new Date(cur.getFullYear(), cur.getMonth() + dir, 1); else cur = add(cur, dir * (narrow ? 1 : 7)); render(); }
 $('prev').onclick = () => step(-1); $('next').onclick = () => step(1);
 $('today').onclick = () => { cur = day0(new Date()); render(); };
-$('add').onclick = () => page === 'mod' ? openMod(null) : page === 'std' ? openLesson(null) : openForm(null);
+$('add').onclick = () => page === 'not' ? openGrade(null) : page === 'mod' ? openMod(null) : page === 'std' ? openLesson(null) : openForm(null);
 $('views').onclick = ev => { const b = ev.target.closest('button'); if (b){ view = b.dataset.v; render(); } };
 function applyTheme(){ if (theme === 'auto') document.documentElement.removeAttribute('data-theme'); else document.documentElement.setAttribute('data-theme', theme); }
 
@@ -1118,6 +1257,12 @@ document.addEventListener('click', ev => {
   if (t.closest('#outBtn')){ logout(); return; }
   if (t.closest('#untisBtn')){ untisSync(true); return; }
   if (t.closest('#cleanBtn')){ const b = t.closest('#cleanBtn'); if (b.dataset.sure) cleanUp(); else { b.dataset.sure = 1; b.textContent = 'Wirklich endgültig löschen?'; } return; }
+  const hj = t.closest('[data-hj]'); if (hj){ gHj = hj.dataset.hj; render(); return; }
+  const gr = t.closest('[data-g]'); if (gr){ openGrade(gr.dataset.g); return; }
+  const ng = t.closest('[data-newgrade]'); if (ng){ const e = entries.find(x => x.id === ng.dataset.newgrade); openGrade(null, e ? {fach: e.fach, art: e.art, titel: e.titel, datum: e.datum, entry_id: e.id} : null); return; }
+  if (t.closest('#pushOn')){ pushOn(); return; }
+  if (t.closest('#pushOff')){ pushOff(); return; }
+  if (t.closest('#pushTest')){ pushTest(); return; }
   if (t.closest('.cf') || t.closest('summary')) return;
   const rf = t.closest('[data-rmf]'); if (rf){ if (rf.dataset.sure) delFile(rf.dataset.rmf); else { rf.dataset.sure = 1; rf.textContent = 'Löschen?'; } return; }
   const fl = t.closest('a.fl'); if (fl){ if (fl.getAttribute('href') === '#'){ ev.preventDefault(); toast(navigator.onLine ? 'Link wird vorbereitet, bitte noch einmal tippen' : 'Dateien öffnen geht nur mit Internet'); } return; }
