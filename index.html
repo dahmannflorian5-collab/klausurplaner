@@ -253,6 +253,12 @@ a.file{color:inherit;text-decoration:none}
 .nowd{position:absolute;height:0;border-top:3.5px solid var(--red);z-index:3;pointer-events:none;border-radius:2px;box-shadow:0 0 6px rgba(229,72,77,.45)}
 .nowd::before{content:"";position:absolute;left:-6px;top:-7.75px;width:12px;height:12px;border-radius:50%;background:var(--red)}
 .now::before{display:none}
+.vl{opacity:.5;border-left-style:dashed!important}.card.vl,.row.vl{border-style:dashed}
+.ev.vl{background:repeating-linear-gradient(135deg,color-mix(in srgb,var(--c) 12%,var(--card)) 0 8px,var(--card) 8px 16px)}
+.q{font-style:normal;font-weight:700;margin-right:3px}
+.vlt{color:var(--mut);font-style:italic}
+.nt.lkb{background:#0b97b3;color:#fff}
+label.chk{display:flex;gap:10px;align-items:center;color:var(--ink);font-size:14px}label.chk input{width:18px;height:18px;margin:0;accent-color:var(--red)}
 /* Notizen und Ausfälle */
 .bdg{position:absolute;right:4px;top:4px;display:flex;gap:3px;z-index:1}
 .bdg .inf{position:static}
@@ -357,6 +363,7 @@ a.file{color:inherit;text-decoration:none}
     <label>Raum oder Ort<input id="fRaum" autocomplete="off"></label>
     <label id="lThema">Thema<input id="fThema" autocomplete="off"></label>
     <label>Notiz<textarea id="fNotiz" placeholder="Stoff, Seiten, Hilfsmittel …"></textarea></label>
+    <label class="chk"><input type="checkbox" id="fVl"> Termin steht noch nicht fest (wird blass angezeigt)</label>
     <label id="lErg">Ergebnis (Note oder Punkte)<input id="fErg" autocomplete="off" placeholder="nach der Rückgabe eintragen"></label>
     <label id="lFiles">Dateien anhängen<input id="fFiles" type="file" multiple></label>
     <div class="ft"><button type="button" class="btn" data-x="dlg">Abbrechen</button><button class="btn pri">Speichern</button></div>
@@ -464,9 +471,9 @@ function loadCache(){ const c = lsj(ck(), {}); entries = c.entries || []; mods =
 function setSync(t){ $('sync').textContent = t; $('sync').hidden = !t; }
 let tt; function toast(m){ const t = $('toast'); t.textContent = m; t.classList.add('on'); clearTimeout(tt); tt = setTimeout(() => t.classList.remove('on'), 2200); }
 
-const normE = r => ({id:r.id, typ:r.typ, titel:r.titel, fach:r.fach || '', art:r.art || '', modul_id:r.modul_id || null, datum:r.datum, von:hm(r.von), bis:hm(r.bis), raum:r.raum || '', thema:r.thema || '', notiz:r.notiz || '', stand:r.stand || 'Nicht begonnen', ergebnis:r.ergebnis || '', done:!!r.done});
+const normE = r => ({id:r.id, typ:r.typ, titel:r.titel, fach:r.fach || '', art:r.art || '', modul_id:r.modul_id || null, datum:r.datum, von:hm(r.von), bis:hm(r.bis), raum:r.raum || '', thema:r.thema || '', notiz:r.notiz || '', stand:r.stand || 'Nicht begonnen', ergebnis:r.ergebnis || '', done:!!r.done, vorlaeufig:!!r.vorlaeufig});
 const normM = r => ({id:r.id, fach:r.fach, name:r.name, von:r.von, bis:r.bis, status:r.status, leistungen:r.leistungen || []});
-const rowE = e => ({id:e.id, user_id:uid, typ:e.typ, titel:e.titel, fach:e.fach || null, art:e.art || null, modul_id:e.modul_id || null, datum:e.datum, von:e.von || null, bis:e.bis || null, raum:e.raum || null, thema:e.thema || null, notiz:e.notiz || null, stand:e.stand || null, ergebnis:e.ergebnis || null, done:!!e.done});
+const rowE = e => ({id:e.id, user_id:uid, typ:e.typ, titel:e.titel, fach:e.fach || null, art:e.art || null, modul_id:e.modul_id || null, datum:e.datum, von:e.von || null, bis:e.bis || null, raum:e.raum || null, thema:e.thema || null, notiz:e.notiz || null, stand:e.stand || null, ergebnis:e.ergebnis || null, done:!!e.done, vorlaeufig:!!e.vorlaeufig});
 const rowM = m => ({id:m.id, user_id:uid, fach:m.fach, name:m.name, von:m.von, bis:m.bis, status:m.status, leistungen:m.leistungen});
 const modById = id => mods.find(m => m.id === id);
 
@@ -678,6 +685,9 @@ function lessonsOn(ds){
   const own = plan.filter(p => !p.untis && p.tag === wd && p.von && p.bis).map(tpl);
   return base.concat(own).map(l => { l.clash = l.status === 'CANCELLED' ? [] : clashes(l); return l; });
 }
+const LINKS = {Informatik: ['Seite deines Informatik-Lehrers', 'https://docalvers.de/svp/informatik/inf13.html']};
+const linkOf = o => o && LINKS[o.fach];
+const vl = e => e.vorlaeufig ? ' vl' : '';
 const STAT = {CANCELLED:'Entfällt', CHANGED:'Geändert', ADDITIONAL:'Zusatzstunde', SUBSTITUTION:'Vertretung', EXAM:'Prüfung', IRREGULAR:'Geändert'};
 function evOn(ds){
   const its = entries.filter(i => i.datum === ds && typesOn[i.typ]);
@@ -714,7 +724,7 @@ function renderWeek(){
   if (narrow){ const m = mon(cur); strip = '<div class="strip">' + Array.from({length:7}, (_, i) => { const d = add(m, i), k = ymd(d); return `<button data-day="${k}" aria-pressed="${k === ymd(cur)}" class="${k === td ? 't' : ''}"><span>${WD[d.getDay()]}</span><b>${d.getDate()}</b></button>`; }).join('') + '</div>'; }
   const head = narrow ? '' : '<div class="wh"><div></div>' + ds.map(d => { const t = ymd(d) === td; return `<div class="${t ? 't' : ''}">${WD[d.getDay()]} ${t ? '<b>' + d.getDate() + '</b>' : d.getDate()}</div>`; }).join('') + '</div>';
   const ad = '<div class="ad"><div class="lb">Ganz&shy;tägig</div>' + ds.map(d => '<div>' + evOn(ymd(d)).filter(e => !e.von).map(e =>
-    `<div class="task ${e.typ === 'klausur' ? 'kl' : ''} ${e.done ? 'done' : ''}" data-id="${e.id}" role="button" tabindex="0" style="--c:${col(e)}">${cbx(e)}<span>${tag(e)}${esc(e.titel)}</span></div>`).join('') + '</div>').join('') + '</div>';
+    `<div class="task ${e.typ === 'klausur' ? 'kl' : ''} ${e.done ? 'done' : ''}${vl(e)}" data-id="${e.id}" role="button" tabindex="0" style="--c:${col(e)}" ${e.vorlaeufig ? 'title="Termin steht noch nicht fest"' : ''}>${cbx(e)}<span>${e.vorlaeufig ? '<i class="q">?</i>' : ''}${tag(e)}${esc(e.titel)}</span></div>`).join('') + '</div>').join('') + '</div>';
   const gut = '<div class="gut">' + Array.from({length:HOURS}, (_, i) => i ? `<span class="hr" style="top:${i*H}px">${START+i}:00</span>` : '').join('') + '</div>';
   const cols = ds.map(d => {
     const evs = evOn(ymd(d)).filter(e => e.von).map(e => ({e, s: toMin(e.von), en: Math.max(toMin(e.von) + 15, dur(e))}));
@@ -722,9 +732,9 @@ function renderWeek(){
     return `<div class="col ${d.getDay() % 6 === 0 ? 'we' : ''}">` + evs.map(x => {
       const top = Math.max(0, (x.s - START*60) / 60 * H), h = Math.max(22, (x.en - x.s) / 60 * H - 3), e = x.e;
       const inf = e.clash && e.clash.length ? `<span class="inf" title="${esc(infoTxt(e))}">i</span>` : '';
-      const nt = e.notiz ? `<span class="nt" title="${esc(e.notiz)}">✎</span>` : '';
+      const nt = (e.typ === 'stunde' && e.notiz ? `<span class="nt" title="${esc(e.notiz)}">✎</span>` : '') + (linkOf(e) && e.typ === 'stunde' ? `<span class="nt lkb" title="${esc(linkOf(e)[0])}">↗</span>` : '');
       const cx = e.status === 'CANCELLED', st = e.status && e.status !== 'REGULAR' ? STAT[e.status] || '' : '';
-      return `<div class="ev ${e.typ === 'klausur' ? 'kl' : ''} ${e.done ? 'done' : ''} ${inf ? 'hasinf' : ''} ${cx ? 'cx' : ''} ${inf || nt ? 'hasb' : ''}" data-id="${e.id}" role="button" tabindex="0" style="--c:${col(e)};top:${top}px;height:${h}px;left:calc(${x.l / x.n * 100}% + 2px);width:calc(${100 / x.n}% - 4px)">${inf || nt ? `<span class="bdg">${nt}${inf}</span>` : ''}${cbx(e)}<b>${tag(e)}${esc(e.titel)}</b>${h > 36 ? `<small>${st ? '<em>' + st + '</em> · ' : ''}${e.von}${e.bis ? ' – ' + e.bis : ''}${e.raum && h > 52 ? ' · ' + esc(e.raum) : ''}</small>` : ''}${e.notiz && h > 64 ? `<small class="nl">✎ ${esc(e.notiz)}</small>` : ''}</div>`;
+      return `<div class="ev ${e.typ === 'klausur' ? 'kl' : ''} ${e.done ? 'done' : ''}${vl(e)} ${inf ? 'hasinf' : ''} ${cx ? 'cx' : ''} ${inf || nt ? 'hasb' : ''}" data-id="${e.id}" role="button" tabindex="0" style="--c:${col(e)};top:${top}px;height:${h}px;left:calc(${x.l / x.n * 100}% + 2px);width:calc(${100 / x.n}% - 4px)">${inf || nt ? `<span class="bdg">${nt}${inf}</span>` : ''}${cbx(e)}<b>${tag(e)}${esc(e.titel)}</b>${h > 36 ? `<small>${st ? '<em>' + st + '</em> · ' : ''}${e.von}${e.bis ? ' – ' + e.bis : ''}${e.raum && h > 52 ? ' · ' + esc(e.raum) : ''}</small>` : ''}${e.typ === 'stunde' && e.notiz && h > 64 ? `<small class="nl">✎ ${esc(e.notiz)}</small>` : ''}${e.vorlaeufig && h > 50 ? '<small class="nl">noch nicht fest</small>' : ''}</div>`;
     }).join('') + '</div>';
   }).join('');
   const now = new Date(), nm = now.getHours()*60 + now.getMinutes(), y = (nm - START*60) / 60 * H;
@@ -739,14 +749,14 @@ function renderMonth(){
   for (let i = 0; i < weeks * 7; i++){
     const d = add(s, i), k = ymd(d), evs = evOn(k).filter(e => e.typ !== 'stunde');
     h += `<div class="cell ${d.getMonth() !== cur.getMonth() ? 'out' : ''} ${k === td ? 'td' : ''}"><span class="n">${d.getDate()}</span>` +
-      evs.slice(0, max).map(e => `<button class="card ${e.done ? 'done' : ''}" data-id="${e.id}" style="--c:${col(e)}"><span class="h"><b>${esc(e.titel)}</b>${e.von ? `<small>${e.von}</small>` : ''}</span><span class="pill"><i></i>${esc(lbl(e))}</span></button>`).join('') +
+      evs.slice(0, max).map(e => `<button class="card ${e.done ? 'done' : ''}${vl(e)}" data-id="${e.id}" style="--c:${col(e)}"><span class="h"><b>${esc(e.titel)}</b>${e.von ? `<small>${e.von}</small>` : ''}</span><span class="pill"><i></i>${esc(lbl(e))}${e.vorlaeufig ? ' · vorläufig' : ''}</span></button>`).join('') +
       (evs.length > max ? `<button class="more" data-day="${k}">+ ${evs.length - max} weitere</button>` : '') + '</div>';
   }
   $('body').innerHTML = h + '</div>';
 }
 function rowHtml(e){
   const nf = filesOf(e).length, m = e.modul_id && modById(e.modul_id);
-  return `<div class="row ${e.done ? 'done' : ''}" data-id="${e.id}" role="button" tabindex="0" style="--c:${col(e)}"><div class="tm">${e.von ? e.von + (e.bis ? '–' + e.bis : '') : 'ganztägig'}</div><div><div class="ti">${cbx(e)}<span>${esc(e.titel)}</span></div><div class="mt"><span class="pill"><i></i>${esc(lbl(e))}</span>${m ? '<span>' + esc(m.name) + '</span>' : ''}${e.raum ? '<span>' + esc(e.raum) + '</span>' : ''}${nf ? '<span>' + nf + (nf === 1 ? ' Datei' : ' Dateien') + '</span>' : ''}${e.ergebnis ? '<span>Ergebnis: ' + esc(e.ergebnis) + '</span>' : ''}</div></div></div>`;
+  return `<div class="row ${e.done ? 'done' : ''}${vl(e)}" data-id="${e.id}" role="button" tabindex="0" style="--c:${col(e)}"><div class="tm">${e.von ? e.von + (e.bis ? '–' + e.bis : '') : 'ganztägig'}</div><div><div class="ti">${cbx(e)}<span>${esc(e.titel)}</span></div><div class="mt"><span class="pill"><i></i>${esc(lbl(e))}</span>${e.vorlaeufig ? '<span class="vlt">Termin steht noch nicht fest</span>' : ''}${m ? '<span>' + esc(m.name) + '</span>' : ''}${e.raum ? '<span>' + esc(e.raum) + '</span>' : ''}${nf ? '<span>' + nf + (nf === 1 ? ' Datei' : ' Dateien') + '</span>' : ''}${e.ergebnis ? '<span>Ergebnis: ' + esc(e.ergebnis) + '</span>' : ''}</div></div></div>`;
 }
 function renderList(){
   const t = day0(new Date()); let h = '<div class="ls">';
@@ -903,6 +913,8 @@ function drawDr(){
   if (e.typ === 'klausur') rows.push(['Vorbereitung', `<select data-stand="${e.id}">${['Nicht begonnen','In Arbeit','Fertig'].map(o => `<option${o === e.stand ? ' selected' : ''}>${o}</option>`).join('')}</select>`]);
   if (e.ergebnis) rows.push(['Ergebnis', '<b>' + esc(e.ergebnis) + '</b>']);
   if (e.typ === 'aufgabe') rows.push(['Status', `<label style="display:flex;gap:8px;align-items:center;color:var(--ink);font-size:14px;--c:${col(e)}">${cbx(e)}${e.done ? 'Erledigt' : 'Offen'}</label>`]);
+  if (e.vorlaeufig) rows.push(['Termin', '<span class="vlt">Steht noch nicht fest</span>']);
+  if (linkOf(e)) rows.push(['Link', `<a class="lnk" href="${esc(linkOf(e)[1])}" target="_blank" rel="noopener">${esc(linkOf(e)[0])} ↗</a>`]);
   if (e.typ === 'stunde') rows.push(['Quelle', e.untis ? '<span class="wu">WebUntis</span>' : 'Eigene Stunde']);
   else rows.push(['Kalender', `<a class="lnk" href="${esc(gcal(e))}" target="_blank" rel="noopener">In Google Kalender eintragen</a>`]);
   const warn = e.clash && e.clash.length ? `<div class="warn"><span class="inf">i</span><div><b>In dieser Stunde:</b>${e.clash.map(c => `<button class="lnk" data-open="${c.id}">${esc((c.art || 'Aufgabe') + ': ' + c.titel)}</button>`).join('')}</div></div>` : '';
@@ -924,6 +936,7 @@ function drawMod(m){
   $('dr').innerHTML = `<div class="dhd" style="--c:${c}"><div style="flex:1"><span class="pill" style="--c:${c}"><i></i>Modul · ${esc(m.fach)}</span><h2>${esc(m.name)}</h2></div><button class="icb" id="drx" aria-label="Schließen">×</button></div>
     <dl class="kv"><dt>Zeitraum</dt><dd>${dshort(m.von)} – ${dshort(m.bis)} <span style="color:var(--mut)">(${diff(m.von) > 0 ? 'startet ' + rel(diff(m.von)) : d1 < 0 ? 'beendet' : 'noch ' + d1 + ' Tage'})</span></dd>
     <dt>Status</dt><dd><select data-mstat="${m.id}">${['Nicht begonnen','In Bearbeitung','Erledigt'].map(o => `<option${o === m.status ? ' selected' : ''}>${o}</option>`).join('')}</select></dd>
+    ${linkOf(m) ? `<dt>Link</dt><dd><a class="lnk" href="${esc(linkOf(m)[1])}" target="_blank" rel="noopener">${esc(linkOf(m)[0])} ↗</a></dd>` : ''}
     <dt>Leistungen</dt><dd>${m.leistungen.length ? `<span class="lst">${m.leistungen.map(l => `<span class="pill" style="--c:${c}">${esc(l)}</span>`).join('')}</span>` : '<span style="color:var(--mut)">keine</span>'}</dd></dl>
     <div class="sec"><h3>Aufgaben und Prüfungen <button class="btn sm" id="madd">+ Aufgabe oder Prüfung</button></h3>${ts.length ? ts.map(t => `<div class="mrow ${t.done ? 'done' : ''}" data-id="${t.id}" style="--c:${col(t)}">${t.typ === 'aufgabe' ? cbx(t) : `<span class="tag" style="margin:0">${esc(t.art || 'Prüfung')}</span>`}<span>${esc(t.titel)}</span><small>${dshort(t.datum)}</small></div>`).join('') : '<p class="note" style="color:var(--mut)">Noch nichts verknüpft.</p>'}</div>
     ${filesSec(m)}<div class="dft"><button class="btn del" id="mdel">Löschen</button><button class="btn" id="medit">Bearbeiten</button></div>`;
@@ -1016,7 +1029,7 @@ function openForm(e, pre){
   setTy(v.typ, v.art); $('tys').hidden = !!e;
   $('fTitel').value = v.titel || ''; $('fFach').value = v.fach || ''; fillMods(v.fach || '', v.modul_id || '');
   $('fDatum').value = v.datum || ''; $('fVon').value = v.von || ''; $('fBis').value = v.bis || ''; $('fRaum').value = v.raum || '';
-  $('fThema').value = v.thema || ''; $('fNotiz').value = v.notiz || ''; $('fErg').value = v.ergebnis || ''; $('fFiles').value = '';
+  $('fThema').value = v.thema || ''; $('fNotiz').value = v.notiz || ''; $('fErg').value = v.ergebnis || ''; $('fFiles').value = ''; $('fVl').checked = !!v.vorlaeufig;
   $('dlg').showModal();
 }
 $('tys').onclick = ev => { const b = ev.target.closest('button'); if (b) setTy(b.dataset.ty); };
@@ -1024,7 +1037,7 @@ $('f').addEventListener('submit', ev => {
   ev.preventDefault();
   const o = {titel: $('fTitel').value.trim(), fach: $('fFach').value, art: ARTEN[fty].length ? $('fArt').value : '', modul_id: fty === 'termin' ? null : ($('fMod').value || null),
     datum: $('fDatum').value, von: $('fVon').value, bis: $('fBis').value, raum: $('fRaum').value.trim(), notiz: $('fNotiz').value.trim(),
-    thema: fty === 'klausur' ? $('fThema').value.trim() : '', ergebnis: fty === 'klausur' ? $('fErg').value.trim() : ''};
+    thema: fty === 'klausur' ? $('fThema').value.trim() : '', ergebnis: fty === 'klausur' ? $('fErg').value.trim() : '', vorlaeufig: $('fVl').checked};
   if (!o.titel || !o.datum) return;
   if (o.bis && !o.von) o.bis = '';
   if (o.von && o.bis && o.bis <= o.von){ toast('„Bis“ muss nach „Von“ liegen'); return; }
