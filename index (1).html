@@ -1,0 +1,469 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<title>Klausurplaner</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0f6e6e">
+<meta name="robots" content="noindex, nofollow">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-192.png">
+<link href="https://fonts.googleapis.com/css2?family=Schibsted+Grotesk:wght@400;500;700;800&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#f3f6f8;--card:#fff;--ink:#12202b;--muted:#5a6a77;--line:#d6dfe5;--accent:#0f6e6e;--onaccent:#fff;--l:40%;--danger:#b3261e;color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0f161c;--card:#172129;--ink:#e6edf2;--muted:#93a4b1;--line:#2a3a45;--accent:#4fc3c3;--onaccent:#08201f;--l:68%;--danger:#ff8a80;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#0f161c;--card:#172129;--ink:#e6edf2;--muted:#93a4b1;--line:#2a3a45;--accent:#4fc3c3;--onaccent:#08201f;--l:68%;--danger:#ff8a80;color-scheme:dark}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.5 "Schibsted Grotesk",system-ui,-apple-system,"Segoe UI",sans-serif}
+main{max-width:760px;margin:0 auto;padding:20px 16px 96px}
+.head{display:flex;justify-content:space-between;align-items:baseline;gap:8px;flex-wrap:wrap}
+h1{font-size:1.1rem;font-weight:700;margin:0;color:var(--muted)}
+#sync{font-size:.8rem;color:var(--muted)}
+.tools{display:flex;gap:2px;flex-wrap:wrap;margin:2px -6px 0}
+.hero{margin:6px 0 20px}
+.next{font-size:clamp(1.7rem,6vw,2.6rem);line-height:1.12;font-weight:800;letter-spacing:-.02em;margin:8px 0 4px}
+.sub{color:var(--muted);margin:0}
+.bar{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:12px}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:10px;overflow:hidden;background:var(--card)}
+.seg button{border:0;background:none;color:var(--muted);padding:8px 14px;font:inherit;font-weight:500;cursor:pointer}
+.seg button[aria-pressed=true]{background:var(--accent);color:var(--onaccent)}
+.chips{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:18px}
+.chip{border:1px solid var(--line);background:var(--card);color:var(--ink);border-radius:999px;padding:5px 12px;font:inherit;font-size:.9rem;cursor:pointer}
+.chip[aria-pressed=true]{border-color:var(--accent);box-shadow:inset 0 0 0 1px var(--accent);font-weight:700}
+button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible,a:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+.item{display:grid;grid-template-columns:62px 1fr;gap:14px;background:var(--card);border:1px solid var(--line);border-left:6px solid hsl(var(--h) 55% var(--l));border-radius:6px;padding:14px;margin-bottom:12px}
+.date{text-align:center;line-height:1.1}
+.date b{display:block;font-size:2rem;font-weight:800}
+.date span{display:block;font-size:.85rem;color:var(--muted)}
+.top{display:flex;gap:8px;align-items:baseline;flex-wrap:wrap}
+.fach{font-weight:800;color:hsl(var(--h) 60% var(--l))}
+.art{color:var(--muted);font-size:.9rem}
+.when{margin-left:auto;font-weight:700;font-size:.9rem}
+.when.soon{color:var(--danger)}
+.thema{font-weight:700;font-size:1.1rem;margin:2px 0}
+.inhalt{white-space:pre-wrap;color:var(--muted);margin:6px 0;font-size:.95rem;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;cursor:pointer}
+.inhalt.open{display:block;-webkit-line-clamp:unset}
+.meta{display:flex;gap:12px;flex-wrap:wrap;align-items:center;font-size:.9rem;color:var(--muted);margin-top:8px}
+.meta select{font:inherit;font-size:.9rem;background:var(--bg);color:var(--ink);border:1px solid var(--line);border-radius:6px;padding:3px 6px}
+.acts{margin-left:auto;display:flex;gap:4px;flex-wrap:wrap}
+.link{background:none;border:0;color:var(--accent);font:inherit;font-size:.9rem;font-weight:700;cursor:pointer;padding:4px 6px;text-decoration:none}
+.link.del{color:var(--danger)}
+.link[disabled]{opacity:.5;cursor:default}
+.empty{border:2px dashed var(--line);border-radius:8px;padding:28px 18px;text-align:center;color:var(--muted)}
+.day{margin-bottom:22px}
+.day h2{font-size:1rem;margin:0 0 8px;font-weight:800}
+.day h2.today{color:var(--accent)}
+.les{display:grid;grid-template-columns:96px 1fr;gap:12px;background:var(--card);border:1px solid var(--line);border-left:6px solid hsl(var(--h) 55% var(--l));border-radius:6px;padding:10px 12px;margin-bottom:8px}
+.les .t{font-weight:700;font-variant-numeric:tabular-nums;font-size:.95rem}
+.les .n{font-weight:700}
+.les .s{color:var(--muted);font-size:.9rem}
+.badge{display:inline-block;font-size:.7rem;font-weight:700;color:var(--accent);border:1px solid var(--accent);border-radius:999px;padding:0 7px;margin-left:6px;vertical-align:middle}
+.untis{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:14px;color:var(--muted);font-size:.9rem}
+.fab{position:fixed;right:max(16px,env(safe-area-inset-right,0px));bottom:calc(18px + env(safe-area-inset-bottom,0px));background:var(--accent);color:var(--onaccent);border:0;border-radius:999px;padding:14px 22px;font:inherit;font-weight:800;box-shadow:0 4px 14px rgba(0,0,0,.25);cursor:pointer}
+dialog{border:1px solid var(--line);border-radius:10px;background:var(--card);color:var(--ink);padding:0;width:min(560px,calc(100% - 24px));max-height:92vh}
+dialog::backdrop{background:rgba(0,0,0,.5)}
+form{padding:18px;display:grid;gap:12px}
+form h2{margin:0;font-size:1.2rem}
+.row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+label{display:grid;gap:4px;font-size:.9rem;font-weight:500}
+input,select,textarea{font:inherit;background:var(--bg);color:var(--ink);border:1px solid var(--line);border-radius:8px;padding:9px 10px;width:100%}
+textarea{min-height:110px;resize:vertical}
+.foot{display:flex;gap:8px;justify-content:flex-end}
+.btn{border:1px solid var(--line);background:var(--card);color:var(--ink);border-radius:8px;padding:10px 16px;font:inherit;font-weight:700;cursor:pointer}
+.btn.pri{background:var(--accent);color:var(--onaccent);border-color:var(--accent)}
+.note{color:var(--muted);font-size:.85rem;margin-top:24px}
+#login{max-width:380px;margin:12vh auto 0;padding:0 16px}
+#login form{background:var(--card);border:1px solid var(--line);border-radius:10px}
+#login h1{font-size:1.6rem;color:var(--ink);margin-bottom:2px}
+.err{color:var(--danger);font-weight:700;margin:0}
+[hidden]{display:none!important}
+@media (max-width:480px){.item{grid-template-columns:48px 1fr;gap:10px}.row{grid-template-columns:1fr}.les{grid-template-columns:84px 1fr}}
+</style>
+</head>
+<body>
+
+<section id="login" hidden>
+  <form id="lf" autocomplete="on">
+    <h1>Klausurplaner</h1>
+    <p class="sub" id="lmsg">Bitte anmelden.</p>
+    <label>E-Mail<input id="lmail" type="email" name="email" autocomplete="username" required></label>
+    <label>Passwort<input id="lpw" type="password" name="password" autocomplete="current-password" required></label>
+    <p class="err" id="lerr" role="alert" hidden></p>
+    <button type="submit" class="btn pri" id="lgo">Anmelden</button>
+  </form>
+</section>
+
+<main id="app" hidden>
+  <div class="head"><h1>Klausurplaner</h1><span><span id="sync"></span> <button class="link" id="theme" type="button"></button></span></div>
+  <div class="tools">
+    <button class="link" id="exp" type="button">Exportieren</button>
+    <button class="link" id="imp" type="button">Importieren</button>
+    <button class="link" id="out" type="button">Abmelden</button>
+    <input type="file" id="impf" accept="application/json,.json" hidden>
+  </div>
+  <div class="bar" style="margin-top:10px"><div class="seg" id="tabs">
+    <button data-t="pruef" aria-pressed="true">Prüfungen</button>
+    <button data-t="plan" aria-pressed="false">Stundenplan</button>
+  </div></div>
+
+  <section id="pPruef">
+    <div class="hero"><p class="next" id="next">Lade …</p><p class="sub" id="nextSub"></p></div>
+    <div class="bar"><div class="seg" id="views">
+      <button data-v="anstehend" aria-pressed="true">Anstehend</button>
+      <button data-v="vergangen" aria-pressed="false">Vergangen</button>
+      <button data-v="alle" aria-pressed="false">Alle</button>
+    </div></div>
+    <div class="chips" id="chips"></div>
+    <div id="list"></div>
+  </section>
+
+  <section id="pPlan" hidden>
+    <div class="untis"><span id="untisInfo"></span><button class="link" id="untisBtn" type="button">Jetzt mit WebUntis abgleichen</button></div>
+    <div id="plan"></div>
+  </section>
+</main>
+<button class="fab" id="add" hidden>+ Neuer Eintrag</button>
+
+<dialog id="dlg">
+  <form id="f" method="dialog">
+    <h2 id="dt">Neuer Eintrag</h2>
+    <div class="row">
+      <label>Fach<input id="fach" required list="fächer" placeholder="z. B. Mathe" autocomplete="off"></label>
+      <label>Art<select id="art"><option>Klausur</option><option>Test</option><option>Kurzkontrolle</option><option>Mündliche Prüfung</option><option>Abgabe</option></select></label>
+    </div>
+    <datalist id="fächer"></datalist>
+    <div class="row">
+      <label>Datum<input id="datum" type="date" required></label>
+      <label>Uhrzeit<input id="zeit" type="time"></label>
+    </div>
+    <div class="row">
+      <label>Raum<input id="raum" placeholder="optional" autocomplete="off"></label>
+      <label>Vorbereitung<select id="stand"><option>Nicht begonnen</option><option>In Arbeit</option><option>Fertig</option></select></label>
+    </div>
+    <label>Thema<input id="thema" placeholder="z. B. Jahresabschluss und Bewertung" autocomplete="off"></label>
+    <label>Inhalt und Stoff<textarea id="inhalt" placeholder="Kapitel, Seiten, erlaubte Hilfsmittel …"></textarea></label>
+    <label>Ergebnis (Note oder Punkte)<input id="ergebnis" placeholder="nach der Rückgabe eintragen" autocomplete="off"></label>
+    <div class="foot"><button type="button" class="btn" data-close="dlg">Abbrechen</button><button type="submit" class="btn pri">Speichern</button></div>
+  </form>
+</dialog>
+
+<dialog id="dlg2">
+  <form id="f2" method="dialog">
+    <h2 id="dt2">Neue Stunde</h2>
+    <label>Tag<select id="tag"><option value="1">Montag</option><option value="2">Dienstag</option><option value="3">Mittwoch</option><option value="4">Donnerstag</option><option value="5">Freitag</option><option value="6">Samstag</option></select></label>
+    <div class="row">
+      <label>Von<input id="von" type="time" required></label>
+      <label>Bis<input id="bis" type="time" required></label>
+    </div>
+    <label>Fach<input id="pfach" required autocomplete="off"></label>
+    <div class="row">
+      <label>Kurs<input id="kurs" placeholder="z. B. GKEth 3" autocomplete="off"></label>
+      <label>Lehrerkürzel<input id="lehrer" placeholder="z. B. BoeAng" autocomplete="off"></label>
+    </div>
+    <label>Raum<input id="praum" autocomplete="off"></label>
+    <p id="err2" class="err" role="alert" hidden></p>
+    <div class="foot"><button type="button" class="btn" data-close="dlg2">Abbrechen</button><button type="button" class="btn pri" id="save2">Speichern</button></div>
+  </form>
+</dialog>
+
+<script src="supabase.js"></script>
+<script src="config.js"></script>
+<script>
+const KEY = 'klausurplaner-v1', PKEY = 'klausurplaner-plan-v1', UKEY = 'klausurplaner-untis', DKEY = 'klausurplaner-dirty', AKEY = 'klausurplaner-user';
+let items = [], plan = [], untisAt = null, view = 'anstehend', tab = 'pruef', filter = '', editId = null, editPid = null;
+let sb = null, uid = null, channel = null, started = false, syncing = false;
+const $ = id => document.getElementById(id);
+const MON = ['Jan','Feb','Mär','Apr','Mai','Jun','Jul','Aug','Sep','Okt','Nov','Dez'];
+const WD = ['So','Mo','Di','Mi','Do','Fr','Sa'];
+const TAGE = ['','Montag','Dienstag','Mittwoch','Donnerstag','Freitag','Samstag'];
+const FK = ['fach','art','datum','zeit','raum','stand','thema','inhalt','ergebnis'];
+
+function ls(k, d){ try { const v = JSON.parse(localStorage.getItem(k)); return v == null ? d : v; } catch(e){ return d; } }
+function lsw(k, v){ try { localStorage.setItem(k, JSON.stringify(v)); } catch(e){} }
+function setSync(t){ $('sync').textContent = t; }
+function esc(s){ return String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+function hue(s){ let h = 0; for (const c of String(s).toLowerCase()) h = (h * 31 + c.charCodeAt(0)) % 360; return h; }
+function today0(){ const d = new Date(); d.setHours(0,0,0,0); return d; }
+function days(i){ return Math.round((new Date(i.datum + 'T00:00') - today0()) / 864e5); }
+function when(i){
+  const d = days(i);
+  if (d === 0) return 'Heute'; if (d === 1) return 'Morgen'; if (d > 1) return 'in ' + d + ' Tagen';
+  if (d === -1) return 'gestern'; return 'vor ' + (-d) + ' Tagen';
+}
+function sorted(list, asc){ return list.slice().sort((a,b) => (a.datum + (a.zeit||'')).localeCompare(b.datum + (b.zeit||'')) * (asc ? 1 : -1)); }
+function gcal(i){
+  const p = n => String(n).padStart(2,'0'), d = i.datum.replace(/-/g,'');
+  let dates;
+  if (i.zeit){ const s = new Date(i.datum + 'T' + i.zeit), e = new Date(s.getTime() + 90*6e4);
+    const f = x => x.getFullYear() + p(x.getMonth()+1) + p(x.getDate()) + 'T' + p(x.getHours()) + p(x.getMinutes()) + '00';
+    dates = f(s) + '/' + f(e);
+  } else { const n = new Date(i.datum + 'T00:00'); n.setDate(n.getDate()+1); dates = d + '/' + n.getFullYear() + p(n.getMonth()+1) + p(n.getDate()); }
+  const q = new URLSearchParams({action:'TEMPLATE', text: i.fach + ' ' + i.art, dates, details: [i.thema, i.inhalt].filter(Boolean).join('\n'), location: i.raum || ''});
+  return 'https://calendar.google.com/calendar/render?' + q;
+}
+
+/* ---------- Speichern und Abgleichen ---------- */
+function saveLocal(){ lsw(KEY, items); lsw(PKEY, plan); lsw(UKEY, untisAt); }
+function mergeById(server, local){
+  const m = new Map(); (server || []).forEach(x => m.set(String(x.id), x)); (local || []).forEach(x => m.set(String(x.id), x));
+  return [...m.values()];
+}
+async function persist(){
+  saveLocal(); lsw(DKEY, true);
+  if (!sb || !uid || !navigator.onLine){ setSync('Nur auf diesem Gerät, wird bei Verbindung abgeglichen'); return; }
+  const { error } = await sb.from('planner').upsert({ user_id: uid, items, plan }, { onConflict: 'user_id' });
+  if (error){ setSync('Sicherung fehlgeschlagen, nur auf diesem Gerät'); return; }
+  lsw(DKEY, false); setSync('Auf allen Geräten gesichert');
+}
+function applyRow(r){
+  items = Array.isArray(r.items) ? r.items : []; plan = Array.isArray(r.plan) ? r.plan : []; untisAt = r.untis_synced_at || null;
+  saveLocal(); lsw(DKEY, false); render();
+}
+async function pull(){
+  const { data, error } = await sb.from('planner').select('items,plan,untis_synced_at').eq('user_id', uid).maybeSingle();
+  if (error){ setSync('Server nicht erreichbar, nur auf diesem Gerät'); return false; }
+  if (!data){ await persist(); return true; }
+  if (ls(DKEY, false)){
+    // Änderungen, die offline entstanden sind, mit dem Serverstand zusammenführen
+    const serverPlan = Array.isArray(data.plan) ? data.plan : [];
+    items = mergeById(data.items, items);
+    plan = serverPlan.filter(p => p.untis).concat(plan.filter(p => !p.untis));
+    untisAt = data.untis_synced_at || untisAt;
+    render(); await persist();
+  } else { applyRow(data); setSync('Auf allen Geräten gesichert'); }
+  return true;
+}
+function listen(){
+  if (channel) return;
+  channel = sb.channel('planner-' + uid).on('postgres_changes', { event: '*', schema: 'public', table: 'planner', filter: 'user_id=eq.' + uid }, p => {
+    if (p.new && p.new.user_id && !ls(DKEY, false)) { applyRow(p.new); setSync('Auf allen Geräten gesichert'); }
+  }).subscribe();
+}
+
+/* ---------- WebUntis ---------- */
+function untisDue(){
+  if (!untisAt) return true;
+  const last = new Date(untisAt), now = new Date(), t745 = new Date(); t745.setHours(7, 45, 0, 0);
+  if (now - last > 24 * 36e5) return true;
+  return now >= t745 && last < t745;
+}
+function fmt(d){ return new Date(d).toLocaleString('de-DE', {weekday:'short', day:'2-digit', month:'2-digit', hour:'2-digit', minute:'2-digit'}); }
+function untisInfo(msg){
+  $('untisInfo').textContent = msg || (untisAt ? 'WebUntis zuletzt abgeglichen: ' + fmt(untisAt) : 'Noch nicht mit WebUntis abgeglichen.');
+}
+async function untisSync(force){
+  if (!sb || !uid || syncing || !navigator.onLine) return;
+  if (!force && !untisDue()) return;
+  syncing = true; $('untisBtn').disabled = true; untisInfo('Gleiche mit WebUntis ab …');
+  try {
+    if (ls(DKEY, false)) await persist(); // eigene Änderungen zuerst sichern, damit nichts überschrieben wird
+    const { data, error } = await sb.functions.invoke('untis-sync', { body: { force: !!force } });
+    if (error){
+      let m = error.message || 'Fehler';
+      try { const j = await error.context.json(); if (j && j.error) m = j.error; } catch(e){}
+      throw new Error(m);
+    }
+    if (data && data.ok === false) throw new Error(data.error || 'Unbekannter Fehler');
+    if (data && Array.isArray(data.plan)){ plan = data.plan; untisAt = data.syncedAt || new Date().toISOString(); saveLocal(); render(); untisInfo(); }
+    else { untisInfo(data && data.skipped ? 'WebUntis: ' + data.skipped : ''); }
+  } catch(e){ untisInfo('WebUntis-Abgleich fehlgeschlagen: ' + e.message); }
+  finally { syncing = false; $('untisBtn').disabled = false; }
+}
+
+/* ---------- Anzeige ---------- */
+function render(){
+  const up = sorted(items.filter(i => days(i) >= 0), true), n = up[0];
+  if (n){
+    const label = n.fach + ' ' + n.art;
+    $('next').textContent = days(n) === 0 ? label + ' ist heute' : label + ' ' + when(n);
+    $('nextSub').textContent = up.length === 1 ? 'Das ist dein einziger anstehender Termin.' : up.length + ' Termine stehen an.';
+  } else { $('next').textContent = 'Keine Prüfung in Sicht'; $('nextSub').textContent = 'Trag deinen nächsten Termin ein.'; }
+  const subjects = [...new Set(items.map(i => i.fach))].sort((a,b) => a.localeCompare(b,'de'));
+  if (filter && !subjects.includes(filter)) filter = '';
+  $('chips').innerHTML = subjects.length ? [''].concat(subjects).map(s => `<button class="chip" data-f="${esc(s)}" aria-pressed="${filter === s}">${s ? esc(s) : 'Alle Fächer'}</button>`).join('') : '';
+  const sugg = [...new Set(plan.map(p => p.fach).filter(f => f && !/^(Tests|NSR)$/.test(f)).concat(subjects))].sort((a,b) => a.localeCompare(b,'de'));
+  $('fächer').innerHTML = sugg.map(s => `<option value="${esc(s)}">`).join('');
+
+  let list = items.filter(i => !filter || i.fach === filter);
+  if (view === 'anstehend') list = sorted(list.filter(i => days(i) >= 0), true);
+  else if (view === 'vergangen') list = sorted(list.filter(i => days(i) < 0), false);
+  else list = sorted(list, true);
+  $('list').innerHTML = !list.length
+    ? `<div class="empty">${items.length ? 'In dieser Ansicht gibt es keine Einträge.' : 'Noch keine Einträge. Tippe auf „Neuer Eintrag“, um deine erste Klausur oder deinen ersten Test anzulegen.'}</div>`
+    : list.map(i => {
+      const d = new Date(i.datum + 'T00:00'), dd = days(i);
+      return `<article class="item" style="--h:${hue(i.fach)}">
+        <div class="date"><b>${d.getDate()}</b><span>${MON[d.getMonth()]}</span><span>${WD[d.getDay()]}</span></div>
+        <div>
+          <div class="top"><span class="fach">${esc(i.fach)}</span><span class="art">${esc(i.art)}</span><span class="when${dd >= 0 && dd <= 3 ? ' soon' : ''}">${when(i)}</span></div>
+          ${i.thema ? `<div class="thema">${esc(i.thema)}</div>` : ''}
+          ${i.inhalt ? `<div class="inhalt" data-open>${esc(i.inhalt)}</div>` : ''}
+          <div class="meta">
+            ${i.zeit ? `<span>${esc(i.zeit)} Uhr</span>` : ''}${i.raum ? `<span>Raum ${esc(i.raum)}</span>` : ''}
+            <select data-s="${esc(i.id)}" aria-label="Vorbereitung">${['Nicht begonnen','In Arbeit','Fertig'].map(o => `<option${o === i.stand ? ' selected' : ''}>${o}</option>`).join('')}</select>
+            ${i.ergebnis ? `<span><b>Ergebnis: ${esc(i.ergebnis)}</b></span>` : ''}
+            <span class="acts"><a class="link" href="${esc(gcal(i))}" target="_blank" rel="noopener">In Kalender</a><button class="link" data-e="${esc(i.id)}">Bearbeiten</button><button class="link del" data-d="${esc(i.id)}">Löschen</button></span>
+          </div>
+        </div></article>`;
+    }).join('');
+  renderPlan(); untisInfo();
+}
+
+function renderPlan(){
+  const t = new Date().getDay(); let html = '';
+  for (let d = 1; d <= 6; d++){
+    const ls_ = plan.filter(p => p.tag === d).sort((a,b) => a.von.localeCompare(b.von));
+    if (d === 6 && !ls_.length) continue;
+    html += `<div class="day"><h2 class="${t === d ? 'today' : ''}">${TAGE[d]}${t === d ? ' (heute)' : ''}</h2>` +
+      (ls_.length ? ls_.map(p => `<div class="les" style="--h:${hue(p.fach)}"><div class="t">${esc(p.von)} bis ${esc(p.bis)}</div><div><div class="n">${esc(p.fach)}${p.untis ? '<span class="badge">WebUntis</span>' : ''}</div><div class="s">${[p.kurs,p.lehrer,p.raum].filter(Boolean).map(esc).join(' · ')}</div>${p.untis ? '' : `<div class="acts" style="justify-content:flex-start;margin-left:-6px"><button class="link" data-pe="${esc(p.id)}">Bearbeiten</button><button class="link del" data-pd="${esc(p.id)}">Löschen</button></div>`}</div></div>`).join('') : '<div class="s" style="color:var(--muted)">Frei</div>') + '</div>';
+  }
+  $('plan').innerHTML = plan.length ? html : '<div class="empty">Dein Stundenplan ist noch leer. Er kommt automatisch aus WebUntis oder du tippst auf „Neue Stunde“.</div>';
+}
+
+function openForm(i){
+  editId = i ? i.id : null; $('dt').textContent = i ? 'Eintrag bearbeiten' : 'Neuer Eintrag';
+  const v = i || {art:'Klausur', stand:'Nicht begonnen'};
+  FK.forEach(k => $(k).value = v[k] || ''); $('dlg').showModal();
+}
+function openPlanForm(p){
+  editPid = p ? p.id : null; $('dt2').textContent = p ? 'Stunde bearbeiten' : 'Neue Stunde';
+  const v = p || {tag:1};
+  $('tag').value = v.tag; $('von').value = v.von || ''; $('bis').value = v.bis || ''; $('pfach').value = v.fach || '';
+  $('kurs').value = v.kurs || ''; $('err2').hidden = true; $('lehrer').value = v.lehrer || ''; $('praum').value = v.raum || ''; $('dlg2').showModal();
+}
+function setTab(t){
+  tab = t; $('pPruef').hidden = t !== 'pruef'; $('pPlan').hidden = t !== 'plan';
+  document.querySelectorAll('#tabs button').forEach(b => b.setAttribute('aria-pressed', b.dataset.t === t));
+  $('add').textContent = t === 'pruef' ? '+ Neuer Eintrag' : '+ Neue Stunde';
+}
+
+$('add').onclick = () => tab === 'pruef' ? openForm(null) : openPlanForm(null);
+document.addEventListener('click', e => { const c = e.target.dataset.close; if (c) $(c).close(); });
+$('tabs').onclick = e => { const b = e.target.closest('button'); if (b) setTab(b.dataset.t); };
+$('f').addEventListener('submit', e => {
+  e.preventDefault(); const o = {}; FK.forEach(k => o[k] = $(k).value.trim());
+  if (!o.fach || !o.datum) return;
+  if (editId){ const i = items.findIndex(x => x.id == editId); items[i] = Object.assign({id: items[i].id}, o); }
+  else items.push(Object.assign({id: Date.now()}, o));
+  $('dlg').close(); render(); persist();
+});
+function savePlan(e){
+  if (e) e.preventDefault();
+  const o = {tag: +$('tag').value, von: $('von').value, bis: $('bis').value, fach: $('pfach').value.trim(), kurs: $('kurs').value.trim(), lehrer: $('lehrer').value.trim(), raum: $('praum').value.trim()};
+  if (!o.fach || !o.von || !o.bis){ $('err2').textContent = 'Bitte Fach, Von und Bis ausfüllen.'; $('err2').hidden = false; return; }
+  if (editPid){ const i = plan.findIndex(x => x.id == editPid); plan[i] = Object.assign({id: plan[i].id}, o); }
+  else plan.push(Object.assign({id: Date.now()}, o));
+  $('dlg2').close(); render(); persist();
+}
+$('f2').addEventListener('submit', savePlan);
+$('save2').onclick = () => savePlan();
+$('views').onclick = e => {
+  const b = e.target.closest('button'); if (!b) return; view = b.dataset.v;
+  document.querySelectorAll('#views button').forEach(x => x.setAttribute('aria-pressed', x === b)); render();
+};
+$('chips').onclick = e => { const b = e.target.closest('.chip'); if (b){ filter = b.dataset.f; render(); } };
+$('list').onclick = e => {
+  const t = e.target;
+  if (t.dataset.open !== undefined) t.classList.toggle('open');
+  if (t.dataset.e) openForm(items.find(x => x.id == t.dataset.e));
+  if (t.dataset.d && confirm('Diesen Eintrag löschen?')){ items = items.filter(x => x.id != t.dataset.d); persist(); render(); }
+};
+$('list').onchange = e => { if (e.target.dataset.s){ const i = items.find(x => x.id == e.target.dataset.s); if (i){ i.stand = e.target.value; persist(); } } };
+$('plan').onclick = e => {
+  const t = e.target;
+  if (t.dataset.pe) openPlanForm(plan.find(x => x.id == t.dataset.pe));
+  if (t.dataset.pd && confirm('Diese Stunde löschen?')){ plan = plan.filter(x => x.id != t.dataset.pd); persist(); render(); }
+};
+$('untisBtn').onclick = () => untisSync(true);
+
+/* ---------- Export, Import ---------- */
+$('exp').onclick = () => {
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([JSON.stringify({items, plan}, null, 1)], {type:'application/json'}));
+  a.download = 'klausurplaner-' + new Date().toISOString().slice(0,10) + '.json'; a.click(); setTimeout(() => URL.revokeObjectURL(a.href), 2000);
+};
+$('imp').onclick = () => $('impf').click();
+$('impf').onchange = async e => {
+  const f = e.target.files[0]; e.target.value = ''; if (!f) return;
+  try {
+    const d = JSON.parse(await f.text());
+    if (!Array.isArray(d.items) || !Array.isArray(d.plan)) throw new Error('Format');
+    if (!confirm('Importieren? Die aktuellen ' + items.length + ' Einträge und ' + plan.length + ' Stunden werden ersetzt.')) return;
+    items = d.items; plan = d.plan; render(); persist();
+  } catch(err){ alert('Diese Datei konnte nicht gelesen werden. Bitte eine Datei verwenden, die vom Klausurplaner exportiert wurde.'); }
+};
+
+/* ---------- Anmeldung ---------- */
+function showLogin(msg){
+  $('app').hidden = true; $('add').hidden = true; $('login').hidden = false;
+  $('lmsg').textContent = msg || 'Bitte anmelden.'; $('lerr').hidden = true;
+}
+function showApp(){ $('login').hidden = true; $('app').hidden = false; $('add').hidden = false; }
+$('lf').addEventListener('submit', async e => {
+  e.preventDefault(); const b = $('lgo'); b.disabled = true; $('lerr').hidden = true;
+  try {
+    if (!sb) throw new Error('Die Seite ist noch nicht eingerichtet (config.js).');
+    const { data, error } = await sb.auth.signInWithPassword({ email: $('lmail').value.trim(), password: $('lpw').value });
+    if (error) throw new Error(/invalid login/i.test(error.message) ? 'E-Mail oder Passwort falsch.' : /fetch|network/i.test(error.message) ? 'Keine Internetverbindung.' : error.message);
+    $('lpw').value = ''; await startApp(data.user.id);
+  } catch(err){ $('lerr').textContent = err.message; $('lerr').hidden = false; }
+  b.disabled = false;
+});
+$('out').onclick = async () => {
+  if (!confirm('Abmelden? Die lokal gespeicherten Daten werden von diesem Gerät entfernt (online bleiben sie erhalten).')) return;
+  try { if (channel) await sb.removeChannel(channel); await sb.auth.signOut(); } catch(e){}
+  [KEY, PKEY, UKEY, DKEY, AKEY].forEach(k => { try { localStorage.removeItem(k); } catch(e){} });
+  channel = null; started = false; uid = null; items = []; plan = []; untisAt = null; showLogin('Du wurdest abgemeldet.');
+};
+
+async function startApp(id){
+  uid = id; lsw(AKEY, id); showApp(); render();
+  if (started) return; started = true;
+  if (!navigator.onLine){ setSync('Offline, es werden die zuletzt gespeicherten Daten angezeigt'); return; }
+  setSync('Gleiche ab …');
+  if (await pull()){ listen(); untisSync(false); }
+}
+async function recheck(){
+  if (!sb || !navigator.onLine) return;
+  let s = null; try { s = (await sb.auth.getSession()).data.session; } catch(e){}
+  if (!s){ if (uid) showLogin('Bitte erneut anmelden.'); return; }
+  if (!started) return startApp(s.user.id);
+  if (await pull()){ listen(); untisSync(false); }
+}
+window.addEventListener('online', recheck);
+document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') recheck(); });
+setInterval(() => { if (document.visibilityState === 'visible' && uid) untisSync(false); }, 15 * 60 * 1000);
+
+/* ---------- Design ---------- */
+const TH = 'klausurplaner-theme', MODES = ['auto','light','dark'], LBL = {auto:'Design: Auto', light:'Design: Hell', dark:'Design: Dunkel'};
+let mode = 'auto'; try { mode = localStorage.getItem(TH) || 'auto'; } catch(e){}
+if (!LBL[mode]) mode = 'auto';
+function applyTheme(){
+  if (mode === 'auto') document.documentElement.removeAttribute('data-theme'); else document.documentElement.setAttribute('data-theme', mode);
+  $('theme').textContent = LBL[mode];
+}
+$('theme').onclick = () => { mode = MODES[(MODES.indexOf(mode) + 1) % 3]; try { localStorage.setItem(TH, mode); } catch(e){} applyTheme(); };
+applyTheme();
+
+/* ---------- Start ---------- */
+(async function boot(){
+  items = ls(KEY, []); plan = ls(PKEY, []); untisAt = ls(UKEY, null);
+  const c = window.KP_CONFIG || {};
+  if (!c.SUPABASE_URL || !c.SUPABASE_KEY || /DEIN/.test(c.SUPABASE_URL + c.SUPABASE_KEY) || !window.supabase){
+    showLogin('Die Seite ist noch nicht eingerichtet: Trage in config.js die Supabase-Adresse und den Schlüssel ein.'); return;
+  }
+  sb = window.supabase.createClient(c.SUPABASE_URL, c.SUPABASE_KEY, { auth: { persistSession: true, autoRefreshToken: true } });
+  sb.auth.onAuthStateChange(ev => { if (ev === 'SIGNED_OUT' && uid && started) showLogin('Bitte erneut anmelden.'); });
+  let session = null; try { session = (await sb.auth.getSession()).data.session; } catch(e){}
+  const known = ls(AKEY, null);
+  if (session) startApp(session.user.id);
+  else if (!navigator.onLine && known) startApp(known);
+  else showLogin();
+})();
+
+if ('serviceWorker' in navigator) window.addEventListener('load', () => navigator.serviceWorker.register('sw.js').catch(() => {}));
+</script>
+</body>
+</html>
