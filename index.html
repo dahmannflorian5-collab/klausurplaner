@@ -228,6 +228,52 @@ a.file{color:inherit;text-decoration:none}
 #login .lhero svg{position:absolute;inset:0;width:100%;height:100%}
 #login h1{font-size:24px;margin:0;color:var(--ink)}
 #login form{padding:20px}
+/* Sonnenbahn */
+.hero{height:200px}
+.sun{position:absolute;right:22px;bottom:6px;z-index:2;width:250px;color:#fff;text-shadow:0 1px 6px rgba(0,0,0,.35)}
+.sun svg{display:block;width:100%;height:auto;overflow:visible}
+.sun text{fill:#fff;font:600 11px Inter,system-ui,sans-serif}
+.sun .lab{position:absolute;left:0;right:0;bottom:34px;display:grid;justify-items:center;gap:2px;text-align:center}
+.sun .tm2{font-size:30px;font-weight:700;line-height:1;letter-spacing:-.01em;font-variant-numeric:tabular-nums}
+.sun .gr{font-size:13px;font-weight:600}
+.hcap{right:300px}
+/* Laufband */
+.tick{display:flex;align-items:stretch;border-bottom:1px solid var(--line);background:var(--soft);height:40px;overflow:hidden}
+.tlb{flex:none;display:grid;place-items:center;padding:0 12px;background:#0a3a73;color:#fff;font-size:12px;font-weight:700}
+.tvw{flex:1;overflow:hidden;position:relative;-webkit-mask-image:linear-gradient(90deg,transparent,#000 20px,#000 calc(100% - 20px),transparent);mask-image:linear-gradient(90deg,transparent,#000 20px,#000 calc(100% - 20px),transparent)}
+.trk{display:inline-flex;white-space:nowrap;height:100%;align-items:center;animation:tk var(--dur,60s) linear infinite;will-change:transform}
+.tick:hover .trk,.tick:focus-within .trk,.trk.pz{animation-play-state:paused}
+@keyframes tk{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+.trk a{color:var(--ink);text-decoration:none;font-size:13.5px;padding:0 18px 0 0;display:inline-flex;gap:7px;align-items:center;height:100%}
+.trk a::before{content:"";width:5px;height:5px;border-radius:50%;background:var(--mut);opacity:.6;margin-right:12px}
+.trk a b{color:var(--mut);font-weight:600}.trk a:hover span{text-decoration:underline}
+.trk a.eil b{color:var(--red)}.trk a.eil::before{background:var(--red);opacity:1}
+@media (prefers-reduced-motion:reduce){.trk{animation:none}.tvw{overflow-x:auto}}
+/* Notizen und Ausfälle */
+.bdg{position:absolute;right:4px;top:4px;display:flex;gap:3px;z-index:1}
+.bdg .inf{position:static}
+.nt{width:17px;height:17px;border-radius:50%;background:var(--ink);color:var(--bg);font-size:10px;line-height:17px;text-align:center;box-shadow:0 0 0 2px var(--card)}
+.ev.hasb b{padding-right:20px}.ev.hasb .bdg:has(.nt+.inf)~b{padding-right:40px}
+.ev .nl{font-style:italic;white-space:normal;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;margin-top:2px}
+.ev small em{font-style:normal;font-weight:700}
+.ev.cx{opacity:.55;background:repeating-linear-gradient(135deg,color-mix(in srgb,var(--c) 10%,var(--card)) 0 6px,var(--card) 6px 12px)}.ev.cx b{text-decoration:line-through}
+.note.wun{background:color-mix(in srgb,#f5b400 16%,var(--card));border-left:3px solid #f5b400}
+/* Speicher */
+.stor{margin:14px 16px 0;padding:14px;border:1px solid var(--line);border-radius:12px;background:var(--card);display:grid;gap:10px;max-width:848px}
+.stor .ms b{color:var(--ink);font-size:14px}
+.prog.big{height:10px}
+.clean summary{cursor:pointer;font-weight:600;font-size:14px;padding:4px 0}
+.cf{display:flex;gap:10px;align-items:center;padding:8px 0;border-bottom:1px solid var(--line);color:var(--ink);font-weight:400}
+.cf input{width:18px;height:18px;accent-color:var(--red);margin:0;flex:none}
+.cf span{display:grid;min-width:0}.cf b{font-size:13.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.cf small{color:var(--mut)}
+#cleanBtn{margin-top:10px}
+@media (max-width:760px){
+  .hero{height:252px}
+  .sun{left:50%;right:auto;transform:translateX(-50%);top:calc(40px + env(safe-area-inset-top,0px));bottom:auto;width:220px}
+  .sun .tm2{font-size:26px}.sun .lab{bottom:30px}
+  .hcap{right:14px}
+  .stor{margin:12px 12px 0}
+}
 </style>
 </head>
 <body>
@@ -252,7 +298,6 @@ a.file{color:inherit;text-decoration:none}
     <radialGradient id="sg"><stop offset="0" stop-color="var(--sun)"/><stop offset="1" stop-color="var(--sun)" stop-opacity="0"/></radialGradient>
     <g id="scene">
       <rect width="1200" height="220" fill="url(#sk)"/>
-      <circle cx="860" cy="92" r="110" fill="url(#sg)" opacity=".8"/><circle cx="860" cy="92" r="34" fill="var(--sun)"/>
       <path d="M0 150 C180 110 320 120 470 140 S760 105 920 128 1120 120 1200 112 V220 H0Z" fill="var(--h1)"/>
       <path d="M0 175 C140 150 300 160 430 172 S700 148 880 165 1080 160 1200 150 V220 H0Z" fill="var(--h2)"/>
       <path d="M0 200 C200 182 380 196 600 192 S960 178 1200 190 V220 H0Z" fill="var(--h3)"/>
@@ -268,8 +313,10 @@ a.file{color:inherit;text-decoration:none}
       <svg viewBox="0 0 1200 220" preserveAspectRatio="xMidYMid slice" aria-hidden="true"><use href="#scene"/></svg>
       <span class="glass syncp" id="sync"></span>
       <div class="hbt"><label class="glass"><input type="file" id="hfile" accept="image/*" hidden>Bild ändern</label><button class="glass" id="hreset" hidden>Standardbild</button></div>
+      <div class="sun" id="sun" role="img"></div>
       <div class="hcap" id="hcap"></div>
     </div>
+    <div class="tick" id="tick" hidden><span class="tlb">tagesschau</span><div class="tvw"><div class="trk" id="trk"></div></div></div>
     <header class="top">
       <div class="nv">
         <button class="icb" id="prev" aria-label="Zurück">‹</button><button class="icb" id="next" aria-label="Weiter">›</button>
@@ -400,7 +447,7 @@ const lessonTitle = p => { const s = subjOf(p.fach); return /^tests?$/i.test(p.f
 
 /* ---------- Zustand ---------- */
 let sb = null, uid = null, channel = null, started = false, syncing = false, flushing = false, pullTimer = null;
-let entries = [], mods = [], files = [], plan = [], untisAt = null, settings = {}, outbox = [];
+let entries = [], mods = [], files = [], plan = [], dated = [], untisAt = null, settings = {}, outbox = [], news = [];
 let cur = day0(new Date()), view = 'woche', page = 'kal', sel = null, editId = null, fty = 'aufgabe', editMod = null, editPid = null;
 let typesOn = {stunde:true, klausur:true, aufgabe:true, termin:true};
 const THEMES = ['auto','light','dark'], TL = {auto:'Auto', light:'Hell', dark:'Dunkel'};
@@ -408,8 +455,8 @@ let theme = ls('kp-theme', 'auto'); if (!TL[theme]) theme = 'auto';
 const mq = matchMedia('(max-width:760px)'); let narrow = mq.matches;
 const ck = () => 'kp2-data-' + uid, ok_ = () => 'kp2-outbox-' + uid;
 
-function saveCache(){ lsw(ck(), JSON.stringify({entries, mods, files, plan, untisAt, settings})); lsw(ok_(), JSON.stringify(outbox)); }
-function loadCache(){ const c = lsj(ck(), {}); entries = c.entries || []; mods = c.mods || []; files = c.files || []; plan = c.plan || []; untisAt = c.untisAt || null; settings = c.settings || {}; outbox = lsj(ok_(), []); }
+function saveCache(){ lsw(ck(), JSON.stringify({entries, mods, files, plan, dated, untisAt, settings})); lsw(ok_(), JSON.stringify(outbox)); }
+function loadCache(){ const c = lsj(ck(), {}); entries = c.entries || []; mods = c.mods || []; files = c.files || []; plan = c.plan || []; dated = c.dated || []; untisAt = c.untisAt || null; settings = c.settings || {}; outbox = lsj(ok_(), []); }
 function setSync(t){ $('sync').textContent = t; $('sync').hidden = !t; }
 let tt; function toast(m){ const t = $('toast'); t.textContent = m; t.classList.add('on'); clearTimeout(tt); tt = setTimeout(() => t.classList.remove('on'), 2200); }
 
@@ -452,14 +499,14 @@ async function pull(){
   try {
     const [a, b, c, d, s] = await Promise.all([
       sb.from('entries').select('*'), sb.from('modules').select('*'), sb.from('files').select('*'),
-      sb.from('planner').select('plan,untis_synced_at').eq('user_id', uid).maybeSingle(),
+      sb.from('planner').select('plan,dated,untis_synced_at').eq('user_id', uid).maybeSingle(),
       sb.from('user_settings').select('*').eq('user_id', uid).maybeSingle()
     ]);
     const err = [a, b, c, d, s].find(r => r.error);
     if (err){ setSync('Server nicht erreichbar · zeige gespeicherten Stand'); return false; }
     if (outbox.length) return false;
     entries = a.data.map(normE); mods = b.data.map(normM); files = c.data;
-    if (d.data){ plan = Array.isArray(d.data.plan) ? d.data.plan : []; untisAt = d.data.untis_synced_at; }
+    if (d.data){ plan = Array.isArray(d.data.plan) ? d.data.plan : []; dated = Array.isArray(d.data.dated) ? d.data.dated : []; untisAt = d.data.untis_synced_at; }
     else await sb.from('planner').upsert({user_id: uid}, {onConflict: 'user_id'});
     settings = s.data || {};
     saveCache(); render(); if (sel) drawDr(); heroSync();
@@ -492,7 +539,7 @@ async function untisSync(force){
     const { data, error } = await sb.functions.invoke('untis-sync', { body: { force: !!force } });
     if (error){ let m = error.message || 'Fehler'; try { const j = await error.context.json(); if (j && j.error) m = j.error; } catch(e){} throw new Error(m); }
     if (data && data.ok === false) throw new Error(data.error || 'Unbekannter Fehler');
-    if (data && Array.isArray(data.plan)){ plan = data.plan; untisAt = data.syncedAt || new Date().toISOString(); saveCache(); untisMsg = ''; }
+    if (data && Array.isArray(data.plan)){ plan = data.plan; if (Array.isArray(data.dated)) dated = data.dated; untisAt = data.syncedAt || new Date().toISOString(); saveCache(); untisMsg = ''; }
     else untisMsg = data && data.skipped ? 'WebUntis: ' + data.skipped : '';
   } catch(e){ untisMsg = 'WebUntis-Abgleich fehlgeschlagen: ' + e.message; }
   finally { syncing = false; render(); }
@@ -547,12 +594,69 @@ $('hreset').onclick = async () => {
   if (old) sb.storage.from('dateien').remove([old]);
   settings.hero_path = null; saveCache(); heroSync(); toast('Standardbild wiederhergestellt');
 };
+/* Sonnenstand für Dresden (nach dem bekannten SunCalc-Verfahren) */
+const LAT = 51.05, LNG = 13.74, RAD = Math.PI / 180, J1970 = 2440588, J2000 = 2451545, OBL = RAD * 23.4397;
+function sunTimes(date){
+  const toDays = d => d.valueOf() / 864e5 - 0.5 + J1970 - J2000, fromJ = j => new Date((j + 0.5 - J1970) * 864e5);
+  const lw = RAD * -LNG, phi = RAD * LAT, d = toDays(date), n = Math.round(d - 0.0009 - lw / (2 * Math.PI));
+  const ds = 0.0009 + lw / (2 * Math.PI) + n, M = RAD * (357.5291 + 0.98560028 * ds);
+  const L = M + RAD * (1.9148 * Math.sin(M) + 0.02 * Math.sin(2 * M) + 0.0003 * Math.sin(3 * M)) + RAD * 102.9372 + Math.PI;
+  const dec = Math.asin(Math.sin(OBL) * Math.sin(L)), noon = J2000 + ds + 0.0053 * Math.sin(M) - 0.0069 * Math.sin(2 * L);
+  const w = Math.acos((Math.sin(-0.833 * RAD) - Math.sin(phi) * Math.sin(dec)) / (Math.cos(phi) * Math.cos(dec)));
+  const set = J2000 + 0.0009 + (w + lw) / (2 * Math.PI) + n + 0.0053 * Math.sin(M) - 0.0069 * Math.sin(2 * L);
+  return { rise: fromJ(noon - (set - noon)), set: fromJ(set) };
+}
+const hhmm2 = d => String(d.getHours()).padStart(2, '0') + ':' + String(d.getMinutes()).padStart(2, '0');
+function greeting(d){
+  const m = d.getHours() * 60 + d.getMinutes();
+  return m < 300 ? 'Gute Nacht' : m < 480 ? 'Guten Start in den Tag' : m < 660 ? 'Guten Morgen' : m < 840 ? 'Schönen Mittag' : m < 1080 ? 'Guten Nachmittag' : m < 1320 ? 'Schönen Abend' : 'Gute Nacht';
+}
+function drawSun(){
+  const now = new Date(), t0 = sunTimes(now);
+  let day = now >= t0.rise && now <= t0.set, a, b;
+  if (day){ a = t0.rise; b = t0.set; }
+  else if (now > t0.set){ a = t0.set; b = sunTimes(add(now, 1)).rise; }
+  else { a = sunTimes(add(now, -1)).set; b = t0.rise; }
+  const f = Math.max(0, Math.min(1, (now - a) / (b - a))), th = Math.PI * f, cx = 130, cy = 118, r = 108;
+  const x = cx - r * Math.cos(th), y = cy - r * Math.sin(th);
+  const body = day
+    ? `<circle cx="${x}" cy="${y}" r="22" fill="#ffd54a" opacity=".22"/><circle cx="${x}" cy="${y}" r="11" fill="#ffd54a"/>`
+    : `<circle cx="${x}" cy="${y}" r="20" fill="#f4f1de" opacity=".14"/><circle cx="${x}" cy="${y}" r="10" fill="#f4f1de" mask="url(#mm)"/>`;
+  $('sun').innerHTML = `<svg viewBox="0 0 260 140" aria-hidden="true"><defs><mask id="mm"><rect x="0" y="0" width="260" height="140" fill="#fff"/><circle cx="${x + 5}" cy="${y - 4}" r="9" fill="#000"/></mask></defs>
+    <path d="M10 ${cy} H250" stroke="rgba(255,255,255,.45)" stroke-width="1"/>
+    <path d="M${cx - r} ${cy} A${r} ${r} 0 0 1 ${cx + r} ${cy}" fill="none" stroke="rgba(255,255,255,.55)" stroke-width="1.5" stroke-dasharray="3 5"/>
+    <path d="M${cx - r} ${cy} A${r} ${r} 0 0 1 ${x} ${y}" fill="none" stroke="${day ? '#ffe28a' : '#d9d6f5'}" stroke-width="2.5" stroke-linecap="round"/>${body}
+    <text x="${cx - r}" y="${cy + 16}" text-anchor="middle">${day ? '↑ ' : '↓ '}${hhmm2(a)}</text><text x="${cx + r}" y="${cy + 16}" text-anchor="middle">${day ? '↓ ' : '↑ '}${hhmm2(b)}</text></svg>
+    <div class="lab"><span class="tm2">${hhmm2(now)}</span><span class="gr">${greeting(now)}, ${NAME}</span></div>`;
+  $('sun').setAttribute('aria-label', greeting(now) + ', ' + hhmm2(now) + ' Uhr. ' + (day ? 'Sonnenuntergang ' + hhmm2(b) : 'Sonnenaufgang ' + hhmm2(b)) + ' Uhr.');
+}
 function heroCap(){
-  const h = new Date().getHours(), g = h < 11 ? 'Guten Morgen' : h < 18 ? 'Guten Tag' : 'Guten Abend', t = new Date();
+  const t = new Date(); drawSun();
   const wk = entries.filter(i => i.typ === 'aufgabe' && !i.done && diff(i.datum) >= 0 && diff(i.datum) < 7).length;
   const nx = entries.filter(i => i.typ === 'klausur' && diff(i.datum) >= 0).sort((a,b) => (a.datum + a.von).localeCompare(b.datum + b.von))[0];
-  $('hcap').innerHTML = `<h2>${g}, ${NAME}</h2><p><span>${WDL[t.getDay()]}, ${t.getDate()}. ${MN[t.getMonth()]}</span><span><b>${wk}</b> offene ${wk === 1 ? 'Aufgabe' : 'Aufgaben'} in den nächsten 7 Tagen</span>${nx ? `<span>Nächste Prüfung: <b>${esc(nx.titel)}</b> ${rel(diff(nx.datum))}</span>` : ''}</p>`;
+  $('hcap').innerHTML = `<h2>${WDL[t.getDay()]}, ${t.getDate()}. ${MN[t.getMonth()]}</h2><p><span><b>${wk}</b> offene ${wk === 1 ? 'Aufgabe' : 'Aufgaben'} in den nächsten 7 Tagen</span>${nx ? `<span>Nächste Prüfung: <b>${esc(nx.titel)}</b> ${rel(diff(nx.datum))}</span>` : ''}</p>`;
 }
+
+/* ---------- Tagesschau-Laufband ---------- */
+function drawNews(){
+  const tk = $('tick'), trk = $('trk');
+  if (!news.length){ tk.hidden = true; return; }
+  const one = news.map(n => `<a href="${esc(n.url)}" target="_blank" rel="noopener" class="${n.eil ? 'eil' : ''}">${n.dach ? `<b>${esc(n.dach)}</b>` : ''}<span>${esc(n.titel)}</span></a>`).join('');
+  trk.innerHTML = one + one.replace(/<a /g, '<a tabindex="-1" aria-hidden="true" ');
+  tk.hidden = false;
+  requestAnimationFrame(() => { trk.style.setProperty('--dur', Math.max(40, trk.scrollWidth / 2 / 55) + 's'); });
+}
+async function loadNews(){
+  const c = window.KP_CONFIG || {};
+  if (!navigator.onLine || !c.SUPABASE_URL) return;
+  try {
+    const r = await fetch(c.SUPABASE_URL + '/functions/v1/news', { headers: { apikey: c.SUPABASE_KEY } });
+    const j = await r.json();
+    if (j && j.ok && Array.isArray(j.items) && j.items.length){ news = j.items; lsw('kp2-news', JSON.stringify(news)); drawNews(); }
+  } catch(e){ /* Laufband bleibt beim letzten Stand */ }
+}
+news = lsj('kp2-news', []);
+$('trk').addEventListener('touchstart', () => { $('trk').classList.add('pz'); clearTimeout(window.__tkT); window.__tkT = setTimeout(() => $('trk').classList.remove('pz'), 4000); }, {passive: true});
 
 /* ---------- Ereignisse eines Tages ---------- */
 function clashes(l){
@@ -560,13 +664,17 @@ function clashes(l){
     (i.von ? toMin(i.von) < toMin(l.bis) && dur(i) > toMin(l.von) : i.fach && i.fach === l.fach));
 }
 const infoTxt = l => l.clash.map(c => (c.art || (c.typ === 'aufgabe' ? 'Aufgabe' : 'Prüfung')) + ': ' + c.titel).join(' · ');
+function datedRange(){ if (!dated.length || !untisAt) return null; const m = mon(new Date(untisAt)); return [ymd(m), ymd(add(m, 13))]; }
 function lessonsOn(ds){
-  const wd = pd(ds).getDay();
-  return plan.filter(p => p.tag === wd && p.von && p.bis).map(p => {
-    const l = {id:'p' + p.id + '@' + ds, pid:p.id, typ:'stunde', titel:lessonTitle(p), fach:subjOf(p.fach), raw:p.fach, kurs:p.kurs || '', lehrer:p.lehrer || '', datum:ds, von:p.von, bis:p.bis, raum:p.raum && p.raum !== '---' ? p.raum : '', untis:!!p.untis};
-    l.clash = clashes(l); return l;
-  });
+  const wd = pd(ds).getDay(), rng = datedRange(), useD = rng && ds >= rng[0] && ds <= rng[1];
+  const tpl = p => ({id:'p' + p.id + '@' + ds, pid:p.id, typ:'stunde', titel:lessonTitle(p), fach:subjOf(p.fach), raw:p.fach, kurs:p.kurs || '', lehrer:p.lehrer || '', datum:ds, von:p.von, bis:p.bis, raum:p.raum && p.raum !== '---' ? p.raum : '', untis:!!p.untis});
+  const base = useD
+    ? dated.filter(x => x.datum === ds && x.von && x.bis).map((x, i) => ({id:'pd' + i + '-' + x.von.replace(':', '') + '@' + ds, typ:'stunde', titel:lessonTitle(x), fach:subjOf(x.fach), raw:x.fach, kurs:x.kurs || '', lehrer:x.lehrer || '', datum:ds, von:x.von, bis:x.bis, raum:x.raum && x.raum !== '---' ? x.raum : '', raumAlt:x.raumAlt || '', untis:true, notiz:x.notiz || '', info:x.info || '', text:x.text || '', vertretung:x.vertretung || '', status:x.status || '', statusDetail:x.statusDetail || ''}))
+    : plan.filter(p => p.untis && p.tag === wd && p.von && p.bis).map(tpl);
+  const own = plan.filter(p => !p.untis && p.tag === wd && p.von && p.bis).map(tpl);
+  return base.concat(own).map(l => { l.clash = l.status === 'CANCELLED' ? [] : clashes(l); return l; });
 }
+const STAT = {CANCELLED:'Entfällt', CHANGED:'Geändert', ADDITIONAL:'Zusatzstunde', SUBSTITUTION:'Vertretung', EXAM:'Prüfung', IRREGULAR:'Geändert'};
 function evOn(ds){
   const its = entries.filter(i => i.datum === ds && typesOn[i.typ]);
   const les = typesOn.stunde ? lessonsOn(ds) : [];
@@ -610,7 +718,9 @@ function renderWeek(){
     return `<div class="col ${d.getDay() % 6 === 0 ? 'we' : ''}">` + evs.map(x => {
       const top = Math.max(0, (x.s - START*60) / 60 * H), h = Math.max(22, (x.en - x.s) / 60 * H - 3), e = x.e;
       const inf = e.clash && e.clash.length ? `<span class="inf" title="${esc(infoTxt(e))}">i</span>` : '';
-      return `<div class="ev ${e.typ === 'klausur' ? 'kl' : ''} ${e.done ? 'done' : ''} ${inf ? 'hasinf' : ''}" data-id="${e.id}" role="button" tabindex="0" style="--c:${col(e)};top:${top}px;height:${h}px;left:calc(${x.l / x.n * 100}% + 2px);width:calc(${100 / x.n}% - 4px)">${inf}${cbx(e)}<b>${tag(e)}${esc(e.titel)}</b>${h > 36 ? `<small>${e.von}${e.bis ? ' – ' + e.bis : ''}${e.raum && h > 52 ? ' · ' + esc(e.raum) : ''}</small>` : ''}</div>`;
+      const nt = e.notiz ? `<span class="nt" title="${esc(e.notiz)}">✎</span>` : '';
+      const cx = e.status === 'CANCELLED', st = e.status && e.status !== 'REGULAR' ? STAT[e.status] || '' : '';
+      return `<div class="ev ${e.typ === 'klausur' ? 'kl' : ''} ${e.done ? 'done' : ''} ${inf ? 'hasinf' : ''} ${cx ? 'cx' : ''} ${inf || nt ? 'hasb' : ''}" data-id="${e.id}" role="button" tabindex="0" style="--c:${col(e)};top:${top}px;height:${h}px;left:calc(${x.l / x.n * 100}% + 2px);width:calc(${100 / x.n}% - 4px)">${inf || nt ? `<span class="bdg">${nt}${inf}</span>` : ''}${cbx(e)}<b>${tag(e)}${esc(e.titel)}</b>${h > 36 ? `<small>${st ? '<em>' + st + '</em> · ' : ''}${e.von}${e.bis ? ' – ' + e.bis : ''}${e.raum && h > 52 ? ' · ' + esc(e.raum) : ''}</small>` : ''}${e.notiz && h > 64 ? `<small class="nl">✎ ${esc(e.notiz)}</small>` : ''}</div>`;
     }).join('') + '</div>';
   }).join('');
   const now = new Date(), nm = now.getHours()*60 + now.getMinutes(), y = (nm - START*60) / 60 * H;
@@ -696,10 +806,35 @@ async function fillLinks(root){
   as.forEach(a => { if (m[a.dataset.path]) a.href = m[a.dataset.path]; });
   root.querySelectorAll('[data-thumb]').forEach(i => { if (m[i.dataset.thumb]) i.src = m[i.dataset.thumb]; });
 }
+const LIMIT = 1024 * 1024 * 1024;
+const ownerOf = f => f.entry_id ? entries.find(e => e.id === f.entry_id) : mods.find(m => m.id === f.module_id);
+const finished = o => !o ? true : isMod(o) ? (o.status === 'Erledigt' || diff(o.bis) < -14) : (diff(o.datum) < -14 && (o.typ !== 'aufgabe' || o.done));
+function storageHtml(){
+  const used = files.reduce((s, f) => s + (+f.size || 0), 0), pct = Math.min(100, used / LIMIT * 100);
+  const old = files.filter(f => finished(ownerOf(f))).sort((a, b) => b.size - a.size);
+  const sum = old.reduce((s, f) => s + (+f.size || 0), 0);
+  return `<div class="stor"><div class="ms"><b>Speicher</b><span>${size(used)} von 1 GB belegt · ${files.length} ${files.length === 1 ? 'Datei' : 'Dateien'}</span></div>
+    <div class="prog big"><i style="width:${Math.max(pct, used ? 1 : 0)}%;background:${pct > 85 ? 'var(--red)' : 'var(--ink)'}"></i></div>
+    ${old.length ? `<details class="clean"><summary>Platz schaffen: ${old.length} ${old.length === 1 ? 'Datei' : 'Dateien'} aus abgeschlossenen Modulen und Aufgaben (${size(sum)})</summary>
+      <p class="up">Vorgeschlagen werden Dateien von Modulen, die beendet sind, und von Prüfungen und erledigten Aufgaben, die mehr als zwei Wochen zurückliegen.</p>
+      ${old.map(f => { const o = ownerOf(f); return `<label class="cf"><input type="checkbox" data-cf="${f.id}" checked><span><b>${esc(f.name)}</b><small>${o ? esc(o.titel || o.name) : 'ohne Zuordnung'} · ${size(f.size)}</small></span></label>`; }).join('')}
+      <button class="btn del" id="cleanBtn">Ausgewählte löschen</button></details>` : '<p class="up">Keine Dateien aus abgeschlossenen Modulen oder Aufgaben.</p>'}</div>`;
+}
+async function cleanUp(){
+  const ids = [...document.querySelectorAll('[data-cf]:checked')].map(i => i.dataset.cf); if (!ids.length) return;
+  if (!navigator.onLine){ toast('Löschen geht nur mit Internet'); return; }
+  const fs = files.filter(f => ids.includes(f.id));
+  const st = await sb.storage.from('dateien').remove(fs.map(f => f.path));
+  if (st && st.error){ toast('Fehler: ' + st.error.message); return; }
+  const r = await sb.from('files').delete().in('id', ids);
+  if (r.error){ toast('Fehler: ' + r.error.message); return; }
+  files = files.filter(f => !ids.includes(f.id)); saveCache(); render();
+  toast(ids.length + (ids.length === 1 ? ' Datei' : ' Dateien') + ' gelöscht, ' + size(fs.reduce((s, f) => s + (+f.size || 0), 0)) + ' frei');
+}
 function renderFiles(){
   const owners = entries.concat(mods).filter(o => filesOf(o).length);
-  $('body').innerHTML = owners.length ? '<div class="ls">' + owners.map(o => `<div class="dh">${esc(o.titel || o.name)}<span>${isMod(o) ? 'Modul · ' + esc(o.fach) : esc(lbl(o)) + ' · ' + dshort(o.datum)}</span></div>` + filesOf(o).map(f => fileRow(f, false)).join('') + `<button class="more" data-id="${o.id}" style="margin-bottom:6px">Öffnen</button>`).join('') + '</div>'
-    : '<div class="empty">Noch keine Dateien. Öffne eine Aufgabe oder ein Modul und ziehe Dateien hinein.</div>';
+  $('body').innerHTML = storageHtml() + (owners.length ? '<div class="ls">' + owners.map(o => `<div class="dh">${esc(o.titel || o.name)}<span>${isMod(o) ? 'Modul · ' + esc(o.fach) : esc(lbl(o)) + ' · ' + dshort(o.datum)}</span></div>` + filesOf(o).map(f => fileRow(f, false)).join('') + `<button class="more" data-id="${o.id}" style="margin-bottom:6px">Öffnen</button>`).join('') + '</div>'
+    : '<div class="empty">Noch keine Dateien. Öffne eine Aufgabe oder ein Modul und ziehe Dateien hinein.</div>');
   fillLinks($('body'));
 }
 
@@ -720,7 +855,7 @@ function render(){
   document.querySelectorAll('#views button').forEach(b => b.setAttribute('aria-pressed', b.dataset.v === view));
   $('views').hidden = noCal || page === 'std';
   $('flt').innerHTML = page === 'std'
-    ? `<div class="ubar"><span>${esc(untisMsg || (untisAt ? 'WebUntis zuletzt abgeglichen: ' + fmtTs(untisAt) : 'Noch nicht mit WebUntis abgeglichen.'))}</span><button class="btn" id="untisBtn" ${syncing ? 'disabled' : ''}>Jetzt abgleichen</button></div>`
+    ? `<div class="ubar"><span>${esc(untisMsg || (untisAt ? 'WebUntis zuletzt abgeglichen: ' + fmtTs(untisAt) : 'Noch nicht mit WebUntis abgeglichen.'))}</span>${(() => { const n = dated.filter(x => x.notiz && x.datum >= ymd(new Date())).length; return n ? `<span>✎ ${n} ${n === 1 ? 'Notiz' : 'Notizen'} in den nächsten Tagen</span>` : ''; })()}<button class="btn" id="untisBtn" ${syncing ? 'disabled' : ''}>Jetzt abgleichen</button></div>`
     : noCal ? '' : Object.entries(TYP).map(([k, [n, c]]) => `<button class="chip" data-t="${k}" aria-pressed="${typesOn[k]}" style="--c:${c}"><i></i>${n}</button>`).join('');
   const nav = view !== 'liste' && !noCal;
   $('prev').hidden = $('next').hidden = $('today').hidden = !nav;
@@ -752,7 +887,11 @@ function drawDr(){
   rows.push([e.typ === 'aufgabe' ? 'Fällig' : 'Datum', `${WD[d.getDay()]}, ${d.getDate()}. ${MN[d.getMonth()]} <span style="color:var(--mut)">(${rel(diff(e.datum))})</span>`]);
   if (e.von) rows.push(['Uhrzeit', e.von + (e.bis ? ' – ' + e.bis : '') + ' Uhr']);
   if (e.raum) rows.push([e.typ === 'termin' ? 'Ort' : 'Raum', esc(e.raum)]);
-  if (e.typ === 'stunde'){ rows.push(['Fach', esc(e.raw)]); if (e.kurs) rows.push(['Kurs', esc(e.kurs)]); if (e.lehrer) rows.push(['Lehrkraft', esc(e.lehrer)]); }
+  if (e.typ === 'stunde'){
+    rows.push(['Fach', esc(e.raw)]); if (e.kurs) rows.push(['Kurs', esc(e.kurs)]); if (e.lehrer) rows.push(['Lehrkraft', esc(e.lehrer)]);
+    if (e.raumAlt) rows.push(['Raum vorher', '<s>' + esc(e.raumAlt) + '</s>']);
+    if (e.status && e.status !== 'REGULAR') rows.push(['Status', `<b style="color:${e.status === 'CANCELLED' ? 'var(--red)' : 'var(--ink)'}">${esc(STAT[e.status] || e.status)}</b>${e.statusDetail ? ' · ' + esc(e.statusDetail) : ''}`]);
+  }
   else if (e.fach) rows.push(['Fach', esc(e.fach)]);
   const m = e.modul_id && modById(e.modul_id);
   if (m) rows.push(['Modul', `<button class="lnk" data-open="${m.id}">${esc(m.name)}</button>`]);
@@ -768,7 +907,8 @@ function drawDr(){
     : `<div class="dft"><button class="btn del" id="del">Löschen</button><button class="btn" id="edit">Bearbeiten</button></div>`;
   $('dr').innerHTML = `<div class="dhd" style="--c:${col(e)}"><div style="flex:1"><span class="pill" style="--c:${col(e)}"><i></i>${esc(lbl(e))}</span><h2>${esc(e.titel)}</h2></div><button class="icb" id="drx" aria-label="Schließen">×</button></div>
     <dl class="kv">${rows.map(r => `<dt>${r[0]}</dt><dd>${r[1]}</dd>`).join('')}</dl>${warn}
-    ${e.notiz ? `<div class="sec"><h3>Notiz</h3><p class="note">${esc(e.notiz)}</p></div>` : ''}${e.typ === 'stunde' ? '' : filesSec(e)}${foot}`;
+    ${e.notiz ? `<div class="sec"><h3>${e.typ === 'stunde' ? 'Notiz aus WebUntis' : 'Notiz'}</h3><p class="note ${e.typ === 'stunde' ? 'wun' : ''}">${esc(e.notiz)}</p></div>` : ''}
+    ${e.typ === 'stunde' && (e.vertretung || e.info || e.text) ? `<div class="sec"><h3>Weitere Hinweise</h3><p class="note">${[e.vertretung, e.info, e.text].filter(Boolean).map(esc).join('<br>')}</p></div>` : ''}${e.typ === 'stunde' ? '' : filesSec(e)}${foot}`;
   wireDr(e);
   if (e.typ === 'stunde' && !e.untis){
     $('pedit').onclick = () => openLesson(plan.find(p => String(p.id) === String(e.pid)));
@@ -960,6 +1100,8 @@ document.addEventListener('click', ev => {
   if (t.closest('#thBtn')){ theme = THEMES[(THEMES.indexOf(theme) + 1) % 3]; lsw('kp-theme', theme); applyTheme(); renderSide(); toast('Design: ' + TL[theme]); return; }
   if (t.closest('#outBtn')){ logout(); return; }
   if (t.closest('#untisBtn')){ untisSync(true); return; }
+  if (t.closest('#cleanBtn')){ const b = t.closest('#cleanBtn'); if (b.dataset.sure) cleanUp(); else { b.dataset.sure = 1; b.textContent = 'Wirklich endgültig löschen?'; } return; }
+  if (t.closest('.cf') || t.closest('summary')) return;
   const rf = t.closest('[data-rmf]'); if (rf){ if (rf.dataset.sure) delFile(rf.dataset.rmf); else { rf.dataset.sure = 1; rf.textContent = 'Löschen?'; } return; }
   const fl = t.closest('a.fl'); if (fl){ if (fl.getAttribute('href') === '#'){ ev.preventDefault(); toast(navigator.onLine ? 'Link wird vorbereitet, bitte noch einmal tippen' : 'Dateien öffnen geht nur mit Internet'); } return; }
   const c = t.closest('[data-t]'); if (c){ typesOn[c.dataset.t] = !typesOn[c.dataset.t]; render(); return; }
@@ -1004,24 +1146,34 @@ async function logout(){
   showHero(''); showLogin('Du wurdest abgemeldet.');
 }
 async function startApp(id){
-  uid = id; lsw('kp2-user', id); loadCache(); showApp(); render();
+  uid = id; lsw('kp2-user', id); loadCache(); showApp(); render(); drawNews();
   showHero(ls('kp2-hero-' + uid, ''));
   if (started) return; started = true;
   if (!navigator.onLine){ setSync('Offline · zeige gespeicherten Stand'); return; }
   setSync('Gleiche ab …');
-  if (await pull()){ listen(); untisSync(false); }
+  if (await pull()){ listen(); untisSync(false); seen(); }
+  loadNews();
+}
+function seen(){
+  if (!sb || !uid || !navigator.onLine) return;
+  if (settings.last_seen && Date.now() - new Date(settings.last_seen) < 6 * 36e5) return;
+  settings.last_seen = new Date().toISOString();
+  sb.from('user_settings').upsert({user_id: uid, last_seen: settings.last_seen}, {onConflict: 'user_id'}).then(() => {}, () => {});
 }
 async function recheck(){
   if (!sb || !navigator.onLine) return;
   let s = null; try { s = (await sb.auth.getSession()).data.session; } catch(e){}
   if (!s){ if (uid) showLogin('Bitte erneut anmelden.'); return; }
   if (!started) return startApp(s.user.id);
-  if (await pull()){ listen(); untisSync(false); }
+  if (await pull()){ listen(); untisSync(false); seen(); }
+  loadNews();
 }
 window.addEventListener('online', recheck);
 window.addEventListener('offline', () => setSync('Offline · Änderungen werden später abgeglichen'));
 document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') recheck(); });
 setInterval(() => { if (document.visibilityState === 'visible' && uid) untisSync(false); }, 15 * 60 * 1000);
+setInterval(() => { if (document.visibilityState === 'visible' && uid) loadNews(); }, 10 * 60 * 1000);
+setInterval(() => { if (uid && document.visibilityState === 'visible') drawSun(); }, 30 * 1000);
 
 applyTheme();
 (async function boot(){
