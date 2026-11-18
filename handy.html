@@ -494,7 +494,7 @@ const ANW = 'https://forms.cloud.microsoft/Pages/ResponsePage.aspx?id=qt0rsct5QU
 const NAME = 'Florian';
 const WD = ['So','Mo','Di','Mi','Do','Fr','Sa'], WDL = ['Sonntag','Montag','Dienstag','Mittwoch','Donnerstag','Freitag','Samstag'];
 const MN = ['Januar','Februar','März','April','Mai','Juni','Juli','August','September','Oktober','November','Dezember'];
-const SUBJ = {Deutsch:'#8e4ec6',Mathe:'#a8692f',Englisch:'#3e63dd',Geschichte:'#c99a00',Ethik:'#d6409f',Informatik:'#0b97b3',Chemie:'#3d9a3d',VBWL:'#0f8a80',Kunst:'#c2562a',Sport:'#e08a1f'};
+const SUBJ = {Deutsch:'#8e4ec6',Mathe:'#a8692f',Englisch:'#3e63dd',Geschichte:'#c99a00',Ethik:'#d6409f',Informatik:'#0b97b3',Chemie:'#3d9a3d',VBWL:'#0f8a80',Kunst:'#c2562a',Sport:'#e08a1f',Physik:'#5b5bd6'};
 const RULES = [[/ethik/i,'Ethik'],[/chemie/i,'Chemie'],[/sport/i,'Sport'],[/englisch/i,'Englisch'],[/kunst/i,'Kunst'],[/volks|betriebs|vbw/i,'VBWL'],[/mathe/i,'Mathe'],[/geschicht/i,'Geschichte'],[/informatik/i,'Informatik'],[/deutsch/i,'Deutsch'],[/spanisch/i,'Spanisch'],[/wirtschaft und recht|^wr\b/i,'WR']];
 const TYP = {stunde:['Stunden','#3e63dd'],klausur:['Prüfungen','#e5484d'],aufgabe:['Aufgaben','#3d9a3d'],termin:['Termine','#64748b']};
 const ARTEN = {klausur:['Klausur','LK','Test','Kurzkontrolle','Mündliche Prüfung','Präsentation','Komplexe Leistung','Experiment','Rede','VorAbi'], aufgabe:['Hausaufgabe','Abgabe','Aufgabe'], termin:[]};
@@ -1176,7 +1176,9 @@ const normG = r => ({id: r.id, fach: r.fach, titel: r.titel || '', art: r.art ||
 const rowG = g => ({id: g.id, user_id: uid, fach: g.fach, titel: g.titel || null, art: g.art || null, punkte: g.punkte, gewicht: g.gewicht, datum: g.datum, halbjahr: g.halbjahr, entry_id: g.entry_id || null});
 const pkt2note = p => (17 - p) / 3;
 const fmtN = n => n.toFixed(1).replace('.', ',');
-const avg = list => { const w = list.reduce((s, g) => s + g.gewicht, 0); return w ? list.reduce((s, g) => s + g.punkte * g.gewicht, 0) / w : null; };
+const LKF = ['VBWL','Mathe']; // Leistungskurse: Klausuren zählen 50 %, sonst 1/3
+const mean = list => { const w = list.reduce((s, g) => s + g.gewicht, 0); return w ? list.reduce((s, g) => s + g.punkte * g.gewicht, 0) / w : null; };
+const avg = list => { if (!list.length) return null; const k = mean(list.filter(g => g.art === 'Klausur')), o = mean(list.filter(g => g.art !== 'Klausur')); if (k == null) return o; if (o == null) return k; const wk = LKF.includes(list[0].fach) ? 1 / 2 : 1 / 3; return k * wk + o * (1 - wk); };
 const pcol = p => p >= 13 ? '#2f9e44' : p >= 10 ? '#3d9a3d' : p >= 7 ? '#c99a00' : p >= 5 ? '#e08a1f' : '#e5484d';
 let gHj = '', editG = null;
 function vNoten(){
@@ -1191,9 +1193,9 @@ function vNoten(){
     ${subs.length ? subs.map(([s, a]) => { const gs = list.filter(g => g.fach === s).sort((x, y) => y.datum.localeCompare(x.datum));
       return `<details class="gf" style="--c:${SUBJ[s] || '#8b95a3'}"><summary><span class="gd"></span><b>${esc(s)}</b><small>${gs.length} ${gs.length === 1 ? 'Note' : 'Noten'}</small><em style="--p:${pcol(a)}">${fmtN(a)}</em></summary>
         <span class="gbar"><i style="width:${a / 15 * 100}%;background:${pcol(a)}"></i></span>
-        ${gs.map(g => `<div class="gr" data-g="${g.id}" role="button" tabindex="0"><span><b>${esc(g.titel || g.art || 'Note')}</b><small>${[g.art && g.titel ? esc(g.art) : '', dshort(g.datum), g.gewicht !== 1 ? String(g.gewicht).replace('.', ',') + '-fach' : ''].filter(Boolean).join(' · ')}</small></span><em style="--p:${pcol(g.punkte)}">${String(g.punkte).replace('.', ',')}</em></div>`).join('')}</details>`; }).join('')
+        ${gs.map(g => `<div class="gr" data-g="${g.id}" role="button" tabindex="0"><span><b>${esc(g.titel || g.art || 'Note')}</b><small>${[g.art && g.titel ? esc(g.art) : '', /\(Notan\)$/.test(g.titel) ? '' : dshort(g.datum), g.gewicht !== 1 ? String(g.gewicht).replace('.', ',') + '-fach' : ''].filter(Boolean).join(' · ')}</small></span><em style="--p:${pcol(g.punkte)}">${String(g.punkte).replace('.', ',')}</em></div>`).join('')}</details>`; }).join('')
       : '<p class="emp">Noch keine Noten für dieses Halbjahr. Tippe auf +, um deine erste Note einzutragen.</p>'}
-    <p class="hint">Der Schnitt pro Fach ist gewichtet (z. B. Klausur doppelt). Der Gesamtschnitt ist der Mittelwert der Fächer. Note = (17 − Punkte) ÷ 3.</p>`;
+    <p class="hint">Pro Fach zählt die Klausur ein Drittel und die sonstigen Noten zwei Drittel, in den Leistungskursen Wirtschaft und Mathe je die Hälfte – wie in Notan. Der Gesamtschnitt ist der Mittelwert der Fächer. Note = (17 − Punkte) ÷ 3.</p>`;
 }
 function openGrade(id, pre){
   const g = id ? grades.find(x => x.id === id) : null; editG = g ? g.id : null;
@@ -1205,7 +1207,7 @@ function openGrade(id, pre){
   $('gArt').value = g ? (GARTEN.includes(g.art) ? g.art : 'Sonstiges') : (pre && GARTEN.includes(pre.art) ? pre.art : 'Klausur');
   $('gTitel').value = g ? g.titel : (pre && pre.titel) || '';
   $('gPkt').value = g ? String(g.punkte).replace('.', ',') : '';
-  $('gGew').value = g ? String(g.gewicht) : ($('gArt').value === 'Klausur' ? '2' : '1');
+  $('gGew').value = g ? String(g.gewicht) : '1';
   $('gDat').value = g ? g.datum : (pre && pre.datum) || ymd(new Date());
   $('gEntry').value = g ? (g.entry_id || '') : (pre && pre.entry_id) || '';
   $('gDel').hidden = !g; delete $('gDel').dataset.sure; $('gDel').textContent = 'Löschen';
@@ -1213,7 +1215,6 @@ function openGrade(id, pre){
 }
 function gPrev(){ const p = parseFloat(String($('gPkt').value).replace(',', '.')); $('gNote').textContent = isNaN(p) || p < 0 || p > 15 ? '' : 'entspricht Note ' + fmtN(pkt2note(p)); }
 $('gPkt').oninput = gPrev;
-$('gArt').onchange = () => { if (!editG) $('gGew').value = $('gArt').value === 'Klausur' ? '2' : '1'; };
 $('gf').onsubmit = ev => {
   ev.preventDefault();
   const p = parseFloat(String($('gPkt').value).replace(',', '.'));
