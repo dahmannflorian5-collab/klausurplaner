@@ -622,7 +622,7 @@ function listen(){
 /* ---------- WebUntis ---------- */
 function untisDue(){
   if (!untisAt) return true;
-  const last = new Date(untisAt), now = new Date(), t = new Date(); t.setHours(7, 45, 0, 0);
+  const last = new Date(untisAt), now = new Date(), t = new Date(); t.setHours(6, 45, 0, 0);
   return now - last > 24 * 36e5 || (now >= t && last < t);
 }
 const fmtTs = d => new Date(d).toLocaleString('de-DE', {weekday:'short', day:'2-digit', month:'2-digit', hour:'2-digit', minute:'2-digit'});
@@ -893,7 +893,7 @@ function drawDr(){
   else rows.push(['Kalender', `<a class="lnk" href="${esc(gcal(e))}" target="_blank" rel="noopener">In Google Kalender eintragen</a>`]);
   const warn = e.clash && e.clash.length ? `<div class="warn"><span class="inf">i</span><div><b>In dieser Stunde:</b>${e.clash.map(c => `<button class="lnk" data-open="${c.id}">${esc((c.art || 'Aufgabe') + ': ' + c.titel)}</button>`).join('')}</div></div>` : '';
   const foot = e.typ === 'stunde'
-    ? (e.untis ? '<div class="sec"><p class="note">Diese Stunde kommt jeden Morgen um 7:45 Uhr automatisch aus WebUntis.</p></div>' : `<div class="dft"><button class="btn del" id="pdel">Löschen</button><button class="btn" id="pedit">Bearbeiten</button></div>`)
+    ? (e.untis ? '<div class="sec"><p class="note">Diese Stunde kommt jeden Morgen um 6:45 Uhr automatisch aus WebUntis.</p></div>' : `<div class="dft"><button class="btn del" id="pdel">Löschen</button><button class="btn" id="pedit">Bearbeiten</button></div>`)
     : `<div class="dft"><button class="btn del" id="del">Löschen</button><button class="btn" id="edit">Bearbeiten</button></div>`;
   $('dr').innerHTML = `<div class="dhd" style="--c:${col(e)}"><div style="flex:1"><span class="pill" style="--c:${col(e)}"><i></i>${esc(lbl(e))}</span><h2>${esc(e.titel)}</h2></div><button class="icb" id="drx" aria-label="Schließen">×</button></div>
     <dl class="kv">${rows.map(r => `<dt>${r[0]}</dt><dd>${r[1]}</dd>`).join('')}</dl>${warn}

@@ -1,7 +1,7 @@
 // Supabase Edge Function: untis-sync
 // Holt den Stundenplan aus WebUntis (Login mit Untis-Mobile-Schlüssel) und
 // schreibt ihn in die Tabelle "planner". Wird aufgerufen
-//  - jeden Morgen um 7:45 Uhr (Zeitplan in der Datenbank, Header x-cron-secret)
+//  - jeden Morgen um 6:45 Uhr (Zeitplan in der Datenbank, Header x-cron-secret)
 //  - von der Webseite beim Öffnen / wenn das Gerät wieder online ist (Login-Token)
 //
 // Geheimnisse (Dashboard > Edge Functions > Secrets):
@@ -9,7 +9,7 @@
 //   UNTIS_SCHOOL  z. B. ibb-ggmbh
 //   UNTIS_USER    dein Untis-Benutzername
 //   UNTIS_SECRET  der Schlüssel aus "Zugriff über Untis Mobile"
-//   CRON_SECRET   frei gewähltes langes Passwort für den 7:45-Zeitplan
+//   CRON_SECRET   frei gewähltes langes Passwort für den 6:45-Zeitplan
 //
 // Zusätzlich werden über die REST-Schnittstelle von WebUntis die Stunden der
 // aktuellen und nächsten Woche mit Notizen, Lehrstoff und Hausaufgaben geholt (Spalte planner.dated).
@@ -269,7 +269,7 @@ async function handler(req: Request): Promise<Response> {
   if (cronHeader) {
     if (!env.CRON_SECRET || cronHeader !== env.CRON_SECRET) return json({ ok: false, error: "Nicht erlaubt." }, 401);
     cron = true;
-    if (!body.force && berlinHour() !== 7) return json({ ok: true, skipped: "nicht 7 Uhr in Berlin" });
+    if (!body.force && berlinHour() !== 6) return json({ ok: true, skipped: "nicht 6 Uhr in Berlin" });
     const r = await rest("planner?select=user_id&limit=1");
     const rows = await r.json();
     userId = rows?.[0]?.user_id ?? null;
