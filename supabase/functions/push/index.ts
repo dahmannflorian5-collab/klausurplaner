@@ -1,6 +1,6 @@
 // Supabase Edge Function: push
 // Schickt Push-Mitteilungen an die Handy-Version des Klausurplaners.
-//  - Zeitplan (Header x-cron-secret), stündlich um :30 -> handelt nur um 6:30 (Morgen) und 19:30 (Abend) Berliner Zeit
+//  - Zeitplan (Header x-cron-secret), halbstündlich -> handelt nur um 7:00 (Morgen) und 19:30 (Abend) Berliner Zeit
 //  - Webseite (Login-Token) mit {action:"test"} -> Testmitteilung an die eigenen Geräte
 // Die VAPID-Schlüssel liegen in der Tabelle app_secrets (nur service_role darf sie lesen).
 import webpush from "npm:web-push@3.6.7";
@@ -12,8 +12,8 @@ const CORS = {
 };
 const json = (o: unknown, status = 200) => new Response(JSON.stringify(o), { status, headers: { ...CORS, "Content-Type": "application/json" } });
 const berlin = (d = new Date()) => {
-  const p = Object.fromEntries(new Intl.DateTimeFormat("en-CA", { timeZone: "Europe/Berlin", year: "numeric", month: "2-digit", day: "2-digit", hour: "2-digit", hour12: false }).formatToParts(d).map((x) => [x.type, x.value]));
-  return { day: `${p.year}-${p.month}-${p.day}`, hour: +p.hour % 24 };
+  const p = Object.fromEntries(new Intl.DateTimeFormat("en-CA", { timeZone: "Europe/Berlin", year: "numeric", month: "2-digit", day: "2-digit", hour: "2-digit", minute: "2-digit", hour12: false }).formatToParts(d).map((x) => [x.type, x.value]));
+  return { day: `${p.year}-${p.month}-${p.day}`, hour: +p.hour % 24, min: +p.minute };
 };
 const addDays = (iso: string, n: number) => { const d = new Date(iso + "T12:00:00Z"); d.setUTCDate(d.getUTCDate() + n); return d.toISOString().slice(0, 10); };
 const WT = ["So", "Mo", "Di", "Mi", "Do", "Fr", "Sa"];
@@ -62,7 +62,7 @@ Deno.serve(async (req) => {
 
   // ----- Zeitplan -----
   const now = berlin();
-  const mode = body.mode || (now.hour === 6 ? "morgen" : now.hour === 19 ? "abend" : "");
+  const mode = body.mode || (now.hour === 7 && now.min < 15 ? "morgen" : now.hour === 19 && now.min >= 30 && now.min < 45 ? "abend" : "");
   if (!mode) return json({ ok: true, skipped: "keine Push-Zeit" });
   const today = now.day, tomorrow = addDays(today, 1);
   const users = [...new Set(((await (await rest("push_subs?select=user_id")).json()) || []).map((r: any) => r.user_id))] as string[];
