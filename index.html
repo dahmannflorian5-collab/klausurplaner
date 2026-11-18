@@ -249,6 +249,10 @@ a.file{color:inherit;text-decoration:none}
 .trk a b{color:var(--mut);font-weight:600}.trk a:hover span{text-decoration:underline}
 .trk a.eil b{color:var(--red)}.trk a.eil::before{background:var(--red);opacity:1}
 @media (prefers-reduced-motion:reduce){.trk{animation:none}.tvw{overflow-x:auto}}
+.now{border-top-width:1px;opacity:.55}
+.nowd{position:absolute;height:0;border-top:3.5px solid var(--red);z-index:3;pointer-events:none;border-radius:2px;box-shadow:0 0 6px rgba(229,72,77,.45)}
+.nowd::before{content:"";position:absolute;left:-6px;top:-7.75px;width:12px;height:12px;border-radius:50%;background:var(--red)}
+.now::before{display:none}
 /* Notizen und Ausfälle */
 .bdg{position:absolute;right:4px;top:4px;display:flex;gap:3px;z-index:1}
 .bdg .inf{position:static}
@@ -725,7 +729,7 @@ function renderWeek(){
   }).join('');
   const now = new Date(), nm = now.getHours()*60 + now.getMinutes(), y = (nm - START*60) / 60 * H;
   const nl = ds.some(d => ymd(d) === td) && nm >= START*60 && nm <= (START+HOURS)*60
-    ? `<div class="now" style="top:${y}px"></div><span class="np" style="top:${y}px">${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}</span>` : '';
+    ? `<div class="now" style="top:${y}px"></div><div class="nowd" style="top:${y}px;left:calc(58px + (100% - 58px) * ${ds.findIndex(d => ymd(d) === td)} / ${n});width:calc((100% - 58px) / ${n})"></div><span class="np" style="top:${y}px">${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}</span>` : '';
   $('body').innerHTML = `<div style="--n:${n}">${strip}${head}${ad}<div class="tg">${gut}${cols}${nl}</div></div>`;
 }
 function renderMonth(){
