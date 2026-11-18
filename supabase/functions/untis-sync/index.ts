@@ -153,6 +153,34 @@ async function fetchDated(s: any, from: Date, to: Date) {
   return toDated(j?.days || []);
 }
 
+// ---------- Hausaufgaben ----------
+const RULES: [RegExp, string][] = [[/ethik/i, "Ethik"], [/chemie/i, "Chemie"], [/sport/i, "Sport"], [/englisch/i, "Englisch"], [/kunst/i, "Kunst"], [/volks|betriebs|vbw/i, "VBWL"], [/mathe/i, "Mathe"], [/geschicht/i, "Geschichte"], [/informatik/i, "Informatik"], [/deutsch/i, "Deutsch"], [/spanisch/i, "Spanisch"]];
+const subjOf = (n: string) => { for (const [r, v] of RULES) if (r.test(n || "")) return v; return n || null; };
+const isoFromNum = (n: any) => { const d = String(n); return `${d.slice(0, 4)}-${d.slice(4, 6)}-${d.slice(6, 8)}`; };
+
+export async function fetchHomework(s: any, from: Date, to: Date) {
+  const url = `${s.base}/WebUntis/api/homeworks/lessons?startDate=${yyyymmdd(from)}&endDate=${yyyymmdd(to)}`;
+  const tries: string[] = [];
+  let j: any = null;
+  const variants: (() => Promise<Record<string, string>>)[] = [
+    async () => ({ ...s.hdr, Cookie: s.cookie }),
+    async () => { const h: any = await restSession(s); delete h["Tenant-Id"]; return h; },
+    async () => await restSession(s),
+  ];
+  for (const v of variants) {
+    const r = await fetch(url, { headers: await v(), redirect: "manual" });
+    tries.push(String(r.status));
+    if (r.ok) { j = await r.json().catch(() => null); if (j) break; }
+  }
+  if (!j) throw new Error("Hausaufgaben: Status " + tries.join("/"));
+  const d = j?.data || {};
+  const les = new Map((d.lessons || []).map((l: any) => [l.id, l.subject || ""]));
+  return (d.homeworks || []).filter((x: any) => x && x.text && x.dueDate).map((x: any) => ({
+    id: x.id, text: String(x.text).trim(), remark: String(x.remark || "").trim(),
+    due: isoFromNum(x.dueDate), given: x.date ? isoFromNum(x.date) : null, subject: les.get(x.lessonId) || "", completed: !!x.completed,
+  }));
+}
+
 // ---------- Umwandlung in den Wochenplan der Webseite ----------
 const hhmm = (t: number | string) => { const s = String(t).padStart(4, "0"); return s.slice(0, 2) + ":" + s.slice(2); };
 const toMin = (t: string) => +t.slice(0, 2) * 60 + +t.slice(3);
@@ -212,7 +240,9 @@ export async function fetchPlan(env: Record<string, string | undefined>) {
   const best = weeks[1].plan.length > weeks[0].plan.length ? weeks[1] : weeks[0];
   let dated: any[] | null = null;
   try { dated = await fetchDated(s, weekRange(0)[0], weekRange(1)[1]); } catch { dated = null; }
-  return { plan: best.plan, raw: best.raw, week: yyyymmdd(best.from), dated };
+  let homework: any[] | null = null, hwError = "";
+  try { const a = new Date(); a.setDate(a.getDate() - 7); const b = new Date(); b.setDate(b.getDate() + 42); homework = await fetchHomework(s, a, b); } catch (e) { hwError = String((e as Error).message || e); }
+  return { plan: best.plan, raw: best.raw, week: yyyymmdd(best.from), dated, homework, hwError };
 }
 
 // ---------- HTTP ----------
@@ -259,8 +289,8 @@ async function handler(req: Request): Promise<Response> {
   }
 
   try {
-    const { plan: fresh, raw, week, dated } = await fetchPlan(env);
-    if (body.debug) return json({ ok: true, week, lessons: raw.slice(0, 5), plan: fresh, dated: (dated || []).slice(0, 8) });
+    const { plan: fresh, raw, week, dated, homework, hwError } = await fetchPlan(env);
+    if (body.debug) return json({ ok: true, week, lessons: raw.slice(0, 5), plan: fresh, dated: (dated || []).slice(0, 8), homework, hwError });
     if (!fresh.length) return json({ ok: true, skipped: "WebUntis hat keine Stunden geliefert (Ferien?). Plan bleibt unverändert." });
     const old: any[] = Array.isArray(row?.plan) ? row.plan : [];
     const hadUntis = old.some((p) => p && p.untis);
@@ -273,7 +303,17 @@ async function handler(req: Request): Promise<Response> {
       body: JSON.stringify({ user_id: userId, plan: merged, untis_synced_at: syncedAt, ...(dated ? { dated } : {}) }),
     });
     if (!w.ok) throw new Error("Speichern fehlgeschlagen: " + (await w.text()));
-    return json({ ok: true, count: fresh.length, week, syncedAt, plan: merged, dated: dated ?? undefined });
+    let hwCount = 0;
+    if (homework && homework.length) {
+      const rows = homework.map((x) => ({
+        user_id: userId, untis_id: "hw-" + x.id, typ: "aufgabe", art: "Hausaufgabe",
+        titel: (x.text.split("\n")[0] || "Hausaufgabe").slice(0, 120), fach: subjOf(x.subject), datum: x.due,
+        notiz: [x.text, x.remark, "Aus WebUntis" + (x.given ? " (aufgegeben am " + x.given.split("-").reverse().join(".") + ")" : "")].filter(Boolean).join("\n\n"),
+      }));
+      const hw = await rest("entries?on_conflict=user_id,untis_id", { method: "POST", headers: { Prefer: "resolution=merge-duplicates,return=minimal" }, body: JSON.stringify(rows) });
+      if (hw.ok) hwCount = rows.length;
+    }
+    return json({ ok: true, count: fresh.length, week, syncedAt, plan: merged, dated: dated ?? undefined, homework: hwCount, hwError: hwError || undefined });
   } catch (e) {
     return json({ ok: false, error: String((e as Error).message || e) }, 502);
   }
