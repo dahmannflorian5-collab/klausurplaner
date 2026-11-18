@@ -4,5 +4,5 @@
 // NIEMALS den "service_role"/"secret"-Schlüssel oder den Untis-Schlüssel hier eintragen.
 window.KP_CONFIG = {
   SUPABASE_URL: "https://waxijjoxvsswxjwykrpx.supabase.co",
-  SUPABASE_KEY: "DEIN_PUBLISHABLE_ODER_ANON_KEY"
+  SUPABASE_KEY: "sb_publishable_gOVyxC517sZPaXL3kU5UoQ_l1kJ3akY"
 };
