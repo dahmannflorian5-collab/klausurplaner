@@ -71,8 +71,12 @@ Deno.serve(async (req) => {
   const schnitt = avgs.length ? avgs.reduce((a, b) => a + b, 0) / avgs.length : null;
   const f1 = (n: number) => n.toFixed(1).replace(".", ",");
 
+  const pr = n0 ? `Nächste Prüfung: ${label(n0)} · ${wann(diff(today, n0.datum))}` : "Keine Prüfung geplant";
+  const fuss = [pr, tasks.length ? "Aufgaben: " + tasks.slice(0, 3).map((e: any) => label(e)).join(", ") : "", schnitt == null ? "" : `Schnitt ${f1(schnitt)} Punkte · Note ${f1((17 - schnitt) / 3)}`].filter(Boolean).join("\n");
+  const alles = [(sday === today ? "Heute, " + dm(today) : dm(sday)) + "\n" + jetzt, lines.length ? lines.join("\n") : "Keine Stunden", fuss].join("\n\n");
   return json({
     ok: true,
+    alles,
     stand: now.hm,
     tag: sday === today ? "Heute, " + dm(today) : dm(sday),
     jetzt,

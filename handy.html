@@ -1291,6 +1291,7 @@ function widgetHtml(){
   if (!tk) return '<p class="empty emp">Der Widget-Schlüssel wird noch geladen. Bitte kurz online gehen und die Seite neu öffnen.</p>';
   const url = WIDGET_BASE + tk;
   const F = [
+    ['★ Alles in einem (nur 1 Text nötig)', '$wg(gv(u), json, ".alles")$'],
     ['Überschrift (Tag)', '$wg(gv(u), json, ".tag")$'],
     ['Jetzt / als Nächstes', '$wg(gv(u), json, ".jetzt")$'],
     ['Stunden des Tages', '$wg(gv(u), json, ".heute")$'],
