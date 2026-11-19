@@ -9,8 +9,8 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <link rel="manifest" href="manifest.webmanifest">
-<link rel="icon" href="icon-192.png">
-<link rel="apple-touch-icon" href="icon-192.png">
+<link rel="icon" href="icon-k-192.png">
+<link rel="apple-touch-icon" href="icon-k-180.png">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
 
@@ -30,7 +30,7 @@ a{color:inherit}
 :focus-visible{outline:2px solid var(--red);outline-offset:2px}
 .app{display:grid;grid-template-columns:80px minmax(0,1fr);gap:10px;padding:10px;min-height:100vh}
 .side{background:var(--side);border-radius:14px;color:#a9adb5;display:flex;flex-direction:column;align-items:center;gap:2px;padding:12px 0;position:sticky;top:10px;height:calc(100vh - 20px);overflow-y:auto;scrollbar-width:none}
-.logo{width:36px;height:36px;border-radius:11px;background:#fff;color:#131417;display:grid;place-items:center;font-weight:700;margin-bottom:8px;flex:none}
+.logo{width:36px;height:36px;border-radius:11px;background:#fff;color:#131417;display:grid;place-items:center;font-weight:700;margin-bottom:8px;flex:none;object-fit:cover}
 .si{background:none;border:0;display:grid;justify-items:center;gap:2px;font-size:10.5px;font-weight:600;padding:5px 2px;width:70px;border-radius:10px;cursor:pointer;color:inherit;text-decoration:none;flex:none}
 .si .ic{width:36px;height:34px;border-radius:10px;display:grid;place-items:center}
 .si svg{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
@@ -300,6 +300,9 @@ label.chk{display:flex;gap:10px;align-items:center;color:var(--ink);font-size:14
 .gwrap .gfs{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:10px;align-items:start}
 .gwrap .gf{margin:0}
 .pw{max-width:640px}.psh{font-size:15px;margin:18px 0 8px}
+.cpr{display:flex;align-items:center;gap:10px}.cpr+.cpr{margin-top:10px;padding-top:10px;border-top:1px solid var(--line)}.cpr>span{flex:1;min-width:0;display:grid;gap:3px}
+.cpr code,.wst code{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:12px;background:var(--soft);border-radius:6px;padding:3px 6px;word-break:break-all}.cpr>code{flex:1;min-width:0}
+.cpb{flex:none}.wst{margin:0 0 0 18px;padding:0;line-height:1.65}.wst li{margin-bottom:4px}
 </style>
 </head>
 <body>
@@ -884,7 +887,7 @@ function renderFiles(){
 
 function renderSide(){
   const nav = [['kal','Kalender'],['auf','Aufgaben'],['pru','Prüfungen'],['not','Noten'],['mod','Module'],['std','Stundenplan'],['dat','Dateien'],['push','Mitteilungen']];
-  $('side').innerHTML = '<div class="logo">KP</div>' + nav.map(n => `<button class="si" data-p="${n[0]}" aria-current="${page === n[0]}">${ic(n[0])}${n[1]}</button>`).join('') +
+  $('side').innerHTML = '<img class="logo" src="icon-k-192.png" alt="Klausurplaner">' + nav.map(n => `<button class="si" data-p="${n[0]}" aria-current="${page === n[0]}">${ic(n[0])}${n[1]}</button>`).join('') +
     '<div class="sp"></div><div class="sep"></div>' +
     `<a class="si aw" href="${esc(ANW)}" target="_blank" rel="noopener" title="Anwesenheit eintragen">${ic('anw')}Anwesenheit</a>` +
     `<a class="si cl" href="${CLAUDE}" target="_blank" rel="noopener" title="Mit Claude chatten">${ic('chat')}Claude</a>` +
@@ -907,7 +910,7 @@ function render(){
   $('kw').textContent = 'KW ' + kw(cur);
   $('title').textContent = page === 'dat' ? 'Dateien' : page === 'mod' ? 'Module' : page === 'not' ? 'Noten' : page === 'push' ? 'Mitteilungen' : view === 'liste' ? (page === 'auf' ? 'Aufgaben' : page === 'pru' ? 'Prüfungen' : 'Anstehend')
     : view === 'woche' && narrow ? WD[cur.getDay()] + ', ' + cur.getDate() + '. ' + MN[cur.getMonth()] : MN[cur.getMonth()] + ' ' + cur.getFullYear();
-  if (page === 'dat') renderFiles(); else if (page === 'mod') renderMods(); else if (page === 'not') $('body').innerHTML = '<div class="gwrap">' + vNoten() + '</div>'; else if (page === 'push') $('body').innerHTML = '<div class="gwrap pw">' + vPush() + '</div>'; else if (view === 'woche') renderWeek(); else if (view === 'monat') renderMonth(); else renderList();
+  if (page === 'dat') renderFiles(); else if (page === 'mod') renderMods(); else if (page === 'not') $('body').innerHTML = '<div class="gwrap">' + vNoten() + '</div>'; else if (page === 'push') $('body').innerHTML = '<div class="gwrap pw">' + vPush() + '<h3 class="psh" style="margin-top:28px;font-size:18px">Tablet-Widget</h3>' + widgetHtml() + '</div>'; else if (view === 'woche') renderWeek(); else if (view === 'monat') renderMonth(); else renderList();
 }
 
 /* ---------- Noten ---------- */
@@ -1018,6 +1021,42 @@ function vPush(){
     <p><b>19:30 Uhr</b> – Was morgen ansteht, dazu Prüfungen in 3 Tagen und in einer Woche.</p>
     <p class="hint" style="margin:0">Gibt es nichts, kommt auch keine Mitteilung. Vorläufige Termine werden nicht gemeldet.</p></div>`;
 }
+
+/* ---------- Tablet-Widget (KWGT) ---------- */
+const WIDGET_BASE = 'https://waxijjoxvsswxjwykrpx.supabase.co/functions/v1/widget?k=';
+function widgetHtml(){
+  const tk = settings && settings.widget_token;
+  if (!tk) return '<p class="empty emp">Der Widget-Schlüssel wird noch geladen. Bitte kurz online gehen und die Seite neu öffnen.</p>';
+  const url = WIDGET_BASE + tk;
+  const F = [
+    ['Überschrift (Tag)', '$wg(gv(u), json, ".tag")$'],
+    ['Jetzt / als Nächstes', '$wg(gv(u), json, ".jetzt")$'],
+    ['Stunden des Tages', '$wg(gv(u), json, ".heute")$'],
+    ['Nächste Prüfung', '$wg(gv(u), json, ".pruefung")$ · $wg(gv(u), json, ".pruefung_wann")$'],
+    ['Nächste 5 Prüfungen', '$wg(gv(u), json, ".pruefungen")$'],
+    ['Aufgaben (7 Tage)', '$wg(gv(u), json, ".aufgaben")$'],
+    ['Noten-Schnitt', 'Schnitt $wg(gv(u), json, ".schnitt")$ Punkte · Note $wg(gv(u), json, ".note")$'],
+  ];
+  const cp = (v, l) => `<button class="btn cpb" data-copy="${esc(v)}">${l || 'Kopieren'}</button>`;
+  return `<div class="pbox"><b>Dein Widget-Link</b><p class="hint" style="margin:4px 0 8px">Geheim halten – wer den Link hat, sieht deine Stunden, Prüfungen und Noten.</p>
+    <div class="cpr"><code>${esc(url)}</code>${cp(url)}</div></div>
+    <h3 class="psh sh">So richtest du das Widget ein (KWGT)</h3>
+    <div class="pbox"><ol class="wst">
+      <li>Im Play Store <b>KWGT Kustom Widget Maker</b> installieren.</li>
+      <li>Auf dem Startbildschirm lange tippen → <b>Widgets</b> → <b>KWGT</b> → Größe 4×2 oder 4×4 auf den Bildschirm ziehen.</li>
+      <li>Auf das leere Widget tippen → <b>Erstellen</b>.</li>
+      <li>Reiter <b>Globale Variablen</b> → <b>+</b> → Typ <b>Text</b>, Name <code>u</code>, als Wert den Widget-Link oben einfügen.</li>
+      <li>Reiter <b>Elemente</b> → <b>+</b> → <b>Text</b>. Beim Text auf das Feld tippen und eine der Formeln unten einfügen. Für jede Zeile ein eigenes Text-Element.</li>
+      <li>Oben auf das <b>Speichern</b>-Symbol tippen. Fertig.</li>
+    </ol><p class="hint" style="margin:8px 0 0">Das Widget aktualisiert sich automatisch alle paar Minuten. Ab 17 Uhr und am Wochenende zeigt es schon den nächsten Schultag.</p></div>
+    <h3 class="psh sh">Formeln zum Kopieren</h3>
+    <div class="pbox fl">${F.map(([l, f]) => `<div class="cpr"><span><b>${l}</b><code>${esc(f)}</code></span>${cp(f)}</div>`).join('')}</div>`;
+}
+document.addEventListener('click', ev => {
+  const b = ev.target.closest('[data-copy]'); if (!b) return;
+  const v = b.dataset.copy, done = () => { const o = b.textContent; b.textContent = 'Kopiert ✓'; setTimeout(() => b.textContent = o, 1500); };
+  if (navigator.clipboard) navigator.clipboard.writeText(v).then(done, () => prompt('Kopieren:', v)); else prompt('Kopieren:', v);
+});
 
 /* ---------- Detailpanel ---------- */
 function gcal(e){
@@ -1236,7 +1275,9 @@ function setPage(p){
   if (p === 'auf'){ view = 'liste'; typesOn = {stunde:false, klausur:false, aufgabe:true, termin:false}; }
   if (p === 'pru'){ view = 'liste'; typesOn = {stunde:false, klausur:true, aufgabe:false, termin:false}; }
   if (p === 'std'){ view = 'woche'; typesOn = {stunde:true, klausur:false, aufgabe:false, termin:false}; }
+  if (p === 'std' || p === 'kal'){ const n = new Date(); n.setHours(0, 0, 0, 0); cur = narrow && n.getDay() === 6 ? add(n, 2) : narrow && n.getDay() === 0 ? add(n, 1) : !narrow && [0, 6].includes(n.getDay()) ? add(mon(n), 7) : n; }
   closeDr(); render(); window.scrollTo({top: 0}); if (p === 'push') pushState().then(render);
+  if (p === 'std') requestAnimationFrame(() => { const nl = document.querySelector('#flt') || document.querySelector('#body'); if (nl) window.scrollTo({top: Math.max(0, nl.getBoundingClientRect().top + scrollY - 70), behavior: 'smooth'}); });
 }
 function step(dir){ if (view === 'monat') cur = new Date(cur.getFullYear(), cur.getMonth() + dir, 1); else cur = add(cur, dir * (narrow ? 1 : 7)); render(); }
 $('prev').onclick = () => step(-1); $('next').onclick = () => step(1);
