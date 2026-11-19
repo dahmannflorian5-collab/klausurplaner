@@ -489,6 +489,7 @@ dialog{width:100%;max-width:100%;margin:auto 0 0;border-radius:20px 20px 0 0;max
 
 <script src="supabase.js"></script>
 <script src="config.js"></script>
+<script src="spotify.js"></script>
 <script>
 {
 const $ = id => document.getElementById(id);
@@ -1106,7 +1107,7 @@ function vHeute(){
   const td = ymd(new Date());
   const tasks = entries.filter(e => e.typ === 'aufgabe' && !e.done && diff(e.datum) < 8).sort((a,b) => a.datum.localeCompare(b.datum));
   const ex = entries.filter(e => e.typ === 'klausur' && diff(e.datum) >= 0).sort((a,b) => (a.datum + a.von).localeCompare(b.datum + b.von)).slice(0, 4);
-  return nowCard() +
+  return nowCard() + '<div data-sp-box></div>' +
     `<h3 class="sh">Heute <span>${dlong(td)}</span></h3><div class="ag">${agenda(td)}</div>` +
     `<h3 class="sh">Bald fällig <span>${tasks.length ? tasks.length + ' offen' : ''}</span></h3>` +
     (tasks.length ? tasks.map(e => item(Object.assign({}, e, {von: '', bis: ''}))).join('').replace(/ganz­tägig/g, '') : '<p class="emp">Keine offenen Aufgaben in den nächsten 7 Tagen.</p>') +
@@ -1321,6 +1322,7 @@ document.addEventListener('click', ev => {
   if (navigator.clipboard) navigator.clipboard.writeText(v).then(done, () => prompt('Kopieren:', v)); else prompt('Kopieren:', v);
 });
 
+{ const _r = render; render = function(){ _r(); if (window.SP) SP.paint(); }; }
 function render(){
   heroCap();
   const v = tab === 'mehr' ? (sub === 'mod' ? vMods() : sub === 'dat' ? '' : sub === 'std' ? vStd() : sub === 'noten' ? vNoten() : sub === 'push' ? vPush() : sub === 'widget' ? '<button class="back" data-mehr="">‹ Mehr</button><h3 class="sh">Tablet-Widget</h3>' + widgetHtml() : vMehr()) : tab === 'woche' ? vWoche() : tab === 'auf' ? vAuf() : tab === 'pru' ? vPru() : vHeute();

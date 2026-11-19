@@ -1,6 +1,6 @@
 // Macht den Klausurplaner offline nutzbar: zuerst Netz, sonst der zuletzt gespeicherte Stand.
-const CACHE = 'klausurplaner-shell-v8';
-const SHELL = ['./', 'index.html', 'handy.html', 'handy.webmanifest', 'supabase.js', 'config.js', 'manifest.webmanifest', 'icon-k-192.png', 'icon-k-512.png'];
+const CACHE = 'klausurplaner-shell-v9';
+const SHELL = ['./', 'index.html', 'handy.html', 'handy.webmanifest', 'supabase.js', 'config.js', 'manifest.webmanifest', 'icon-k-192.png', 'icon-k-512.png', 'spotify.js'];
 
 self.addEventListener('install', e => {
   e.waitUntil(caches.open(CACHE).then(c => c.addAll(SHELL)).then(() => self.skipWaiting()));
