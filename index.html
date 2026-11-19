@@ -305,6 +305,10 @@ label.chk{display:flex;gap:10px;align-items:center;color:var(--ink);font-size:14
 .cpb{flex:none}.wst{margin:0 0 0 18px;padding:0;line-height:1.65}.wst li{margin-bottom:4px}
 #spdock{position:fixed;right:16px;bottom:16px;width:330px;max-height:calc(100vh - 32px);overflow:auto;z-index:25;margin:0;box-shadow:0 12px 40px rgba(0,0,0,.18)}
 #spBtn[aria-pressed=true]{color:#1DB954}
+.gu{font-style:normal;font-size:10.5px;font-weight:700;color:#2f9e44;background:color-mix(in srgb,#2f9e44 12%,transparent);border-radius:6px;padding:1px 6px;margin-left:6px;vertical-align:middle;white-space:nowrap}.gu.gux{color:var(--red);background:color-mix(in srgb,var(--red) 12%,transparent)}
+.gko{background:color-mix(in srgb,var(--red) 7%,transparent)}
+.gkbox{border:1.5px solid var(--red);background:color-mix(in srgb,var(--red) 6%,var(--card));border-radius:14px;padding:12px 14px;margin:12px 0}.gkbox>b{color:var(--red);display:block;margin-bottom:6px}
+.gkr{display:flex;flex-wrap:wrap;gap:8px;align-items:center;justify-content:space-between;padding:8px 0;border-top:1px solid var(--line);font-size:13.5px}.gkr small{color:var(--mut)}.gkb{display:flex;gap:6px;flex-wrap:wrap}.gkb .btn{font-size:12.5px;padding:6px 10px}
 </style>
 </head>
 <body>
@@ -902,6 +906,8 @@ function renderSide(){
     `<button class="si" id="thBtn" title="Design wechseln">${ic(theme)}${TL[theme]}</button>` +
     `<button class="si" id="outBtn">${ic('out')}Abmelden</button>`;
 }
+function hashNav(){ if (location.hash === '#noten'){ history.replaceState(null, '', location.pathname); setPage('not'); } }
+window.addEventListener('hashchange', hashNav); setTimeout(hashNav, 600);
 function render(){
   renderSide(); heroCap();
   $('add').textContent = page === 'mod' ? '+ Neues Modul' : page === 'std' ? '+ Neue Stunde' : page === 'not' ? '+ Neue Note' : '+ Neu';
@@ -925,8 +931,8 @@ function render(){
 const GARTEN = ['Klausur','LK','Test','Mündlich','Präsentation','Komplexe Leistung','Sonstiges'];
 // Halbjahr: Aug–Jan = /I, Feb–Jul = /II; Schuljahr 2026/27 = Klasse 13
 function hjOf(ds){ const d = pd(ds), y = d.getFullYear(), m = d.getMonth() + 1; const sy = m >= 8 ? y : y - 1; return (13 + sy - 2026) + (m >= 8 || m === 1 ? '/I' : '/II'); }
-const normG = r => ({id: r.id, fach: r.fach, titel: r.titel || '', art: r.art || '', punkte: +r.punkte, gewicht: +r.gewicht || 1, datum: r.datum, halbjahr: r.halbjahr || hjOf(r.datum), entry_id: r.entry_id || null});
-const rowG = g => ({id: g.id, user_id: uid, fach: g.fach, titel: g.titel || null, art: g.art || null, punkte: g.punkte, gewicht: g.gewicht, datum: g.datum, halbjahr: g.halbjahr, entry_id: g.entry_id || null});
+const normG = r => ({id: r.id, fach: r.fach, titel: r.titel || '', art: r.art || '', punkte: +r.punkte, gewicht: +r.gewicht || 1, datum: r.datum, halbjahr: r.halbjahr || hjOf(r.datum), entry_id: r.entry_id || null, untis_id: r.untis_id || null, untis_punkte: r.untis_punkte == null ? null : +r.untis_punkte, konflikt: !!r.konflikt, quelle: r.quelle || 'manuell'});
+const rowG = g => ({id: g.id, user_id: uid, fach: g.fach, titel: g.titel || null, art: g.art || null, punkte: g.punkte, gewicht: g.gewicht, datum: g.datum, halbjahr: g.halbjahr, entry_id: g.entry_id || null, konflikt: !!g.konflikt});
 const pkt2note = p => (17 - p) / 3;
 const fmtN = n => n.toFixed(1).replace('.', ',');
 const LKF = ['VBWL','Mathe']; // Leistungskurse: Klausuren zählen 50 %, sonst 1/3
@@ -941,13 +947,14 @@ function vNoten(){
   const subs = [...new Set(list.map(g => g.fach))].map(f => [f, avg(list.filter(g => g.fach === f))]).sort((a, b) => b[1] - a[1]);
   const all = subs.length ? subs.reduce((a, x) => a + x[1], 0) / subs.length : null;
   return `<div class="hjs">${hjs.map(h => `<button data-hj="${h}" aria-pressed="${h === gHj}">${h}</button>`).join('')}</div>
+    ${(() => { const k = grades.filter(g => g.konflikt); return k.length ? `<div class="gkbox"><b>⚠ ${k.length === 1 ? 'Eine Note weicht' : k.length + ' Noten weichen'} von WebUntis ab</b>${k.map(g => `<div class="gkr"><span>${esc(g.fach)} · ${esc(g.titel || g.art)} <small>${esc(g.halbjahr)}</small><br>WebUntis: <b>${String(g.untis_punkte).replace('.', ',')} P.</b> · bei dir: <b>${String(g.punkte).replace('.', ',')} P.</b></span><span class="gkb"><button class="btn" data-gres="${g.id}" data-v="untis">WebUntis übernehmen</button><button class="btn" data-gres="${g.id}" data-v="mine">Meine behalten</button></span></div>`).join('')}</div>` : ''; })()}
     <div class="gsum"><div><small>Schnitt ${esc(gHj)}</small><b>${all == null ? '–' : fmtN(all)} <span>Punkte</span></b></div><div><small>Note</small><b>${all == null ? '–' : fmtN(pkt2note(all))}</b></div><div><small>Noten</small><b>${list.length}</b></div></div>
     ${subs.length ? '<div class="gfs">' + subs.map(([s, a]) => { const gs = list.filter(g => g.fach === s).sort((x, y) => y.datum.localeCompare(x.datum));
       return `<details class="gf" style="--c:${SUBJ[s] || '#8b95a3'}"><summary><span class="gd"></span><b>${esc(s)}</b><small>${gs.length} ${gs.length === 1 ? 'Note' : 'Noten'}</small><em style="--p:${pcol(a)}">${fmtN(a)}</em></summary>
         <span class="gbar"><i style="width:${a / 15 * 100}%;background:${pcol(a)}"></i></span>
-        ${gs.map(g => `<div class="gn" data-g="${g.id}" role="button" tabindex="0"><span><b>${esc(g.titel || g.art || 'Note')}</b><small>${[g.art && g.titel ? esc(g.art) : '', /\(Notan\)$/.test(g.titel) ? '' : dshort(g.datum), g.gewicht !== 1 ? String(g.gewicht).replace('.', ',') + '-fach' : ''].filter(Boolean).join(' · ')}</small></span><em style="--p:${pcol(g.punkte)}">${String(g.punkte).replace('.', ',')}</em></div>`).join('')}</details>`; }).join('') + '</div>'
+        ${gs.map(g => `<div class="gn${g.konflikt ? ' gko' : ''}" data-g="${g.id}" role="button" tabindex="0"><span><b>${esc(g.titel || g.art || 'Note')}${g.untis_id ? (g.konflikt ? ' <i class="gu gux">≠ WebUntis ' + String(g.untis_punkte).replace('.', ',') + '</i>' : ' <i class="gu">WebUntis ✓</i>') : ''}</b><small>${[g.art && g.titel ? esc(g.art) : '', /\(Notan\)$/.test(g.titel) ? '' : dshort(g.datum), g.gewicht !== 1 ? String(g.gewicht).replace('.', ',') + '-fach' : ''].filter(Boolean).join(' · ')}</small></span><em style="--p:${pcol(g.punkte)}">${String(g.punkte).replace('.', ',')}</em></div>`).join('')}</details>`; }).join('') + '</div>'
       : '<p class="empty">Noch keine Noten für dieses Halbjahr. Tippe auf +, um deine erste Note einzutragen.</p>'}
-    <p class="hint">Pro Fach zählt die Klausur ein Drittel und die sonstigen Noten zwei Drittel, in den Leistungskursen Wirtschaft und Mathe je die Hälfte – wie in Notan. Der Gesamtschnitt ist der Mittelwert der Fächer. Note = (17 − Punkte) ÷ 3.</p>`;
+    <p class="hint">Pro Fach zählt die Klausur ein Drittel und die sonstigen Noten zwei Drittel, in den Leistungskursen Wirtschaft und Mathe je die Hälfte – wie in Notan. Der Gesamtschnitt ist der Mittelwert der Fächer. Note = (17 − Punkte) ÷ 3. Noten aus WebUntis werden jeden Morgen automatisch abgeglichen und mit deinen eigenen Einträgen zusammengeführt.</p>`;
 }
 function openGrade(id, pre){
   const g = id ? grades.find(x => x.id === id) : null; editG = g ? g.id : null;
@@ -974,7 +981,7 @@ $('gf').onsubmit = ev => {
   const o = {fach: $('gFach').value, art: $('gArt').value, titel: $('gTitel').value.trim(), punkte: Math.round(p * 10) / 10, gewicht: +$('gGew').value, datum: $('gDat').value || ymd(new Date()), entry_id: $('gEntry').value || null};
   o.halbjahr = hjOf(o.datum);
   let g = editG && grades.find(x => x.id === editG);
-  if (g) Object.assign(g, o); else { g = {id: crypto.randomUUID(), ...o}; grades.push(g); }
+  if (g){ Object.assign(g, o); if (g.untis_punkte != null && g.punkte === g.untis_punkte) g.konflikt = false; } else { g = {id: crypto.randomUUID(), ...o}; grades.push(g); }
   queue({k:'up', t:'grades', row: rowG(g)}); gHj = g.halbjahr; $('gdlg').close(); if (page !== 'not') setPage('not'); else render(); toast('Note gespeichert');
 };
 $('gDel').onclick = () => {
@@ -1310,6 +1317,7 @@ document.addEventListener('click', ev => {
   if (t.closest('#untisBtn')){ untisSync(true); return; }
   if (t.closest('#cleanBtn')){ const b = t.closest('#cleanBtn'); if (b.dataset.sure) cleanUp(); else { b.dataset.sure = 1; b.textContent = 'Wirklich endgültig löschen?'; } return; }
   const hj = t.closest('[data-hj]'); if (hj){ gHj = hj.dataset.hj; render(); return; }
+  const gres = t.closest('[data-gres]'); if (gres){ const g = grades.find(x => x.id === gres.dataset.gres); if (g){ if (gres.dataset.v === 'untis') g.punkte = g.untis_punkte; g.konflikt = false; queue({k:'up', t:'grades', row: rowG(g)}); render(); toast(gres.dataset.v === 'untis' ? 'WebUntis-Note übernommen' : 'Deine Note bleibt'); } return; }
   const gr = t.closest('[data-g]'); if (gr){ openGrade(gr.dataset.g); return; }
   const ng = t.closest('[data-newgrade]'); if (ng){ const e = entries.find(x => x.id === ng.dataset.newgrade); openGrade(null, e ? {fach: e.fach, art: e.art, titel: e.titel, datum: e.datum, entry_id: e.id} : null); return; }
   if (t.closest('#pushOn')){ pushOn(); return; }

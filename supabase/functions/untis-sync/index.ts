@@ -181,6 +181,83 @@ export async function fetchHomework(s: any, from: Date, to: Date) {
   }));
 }
 
+// ---------- Noten ----------
+const STEMS: [string, string][] = [["VBW", "VBWL"], ["Phy", "Physik"], ["Ma", "Mathe"], ["Ch", "Chemie"], ["Inf", "Informatik"], ["Et", "Ethik"], ["En", "Englisch"], ["Ge", "Geschichte"], ["Ku", "Kunst"], ["Sp", "Sport"], ["De", "Deutsch"], ["D", "Deutsch"]];
+const subjOf2 = (code: string, longMap: Record<string, string>) => {
+  const l = longMap[code]; if (l) { const v = subjOf(l); if (v && v !== l) return v; }
+  const c = String(code || "").replace(/^BGY-?/i, "").replace(/\s*\d+$/, "").replace(/^(LK|GK)(?=[A-Z])/, "").replace(/^(L|G)(?=[A-Z])/, "");
+  for (const [p, v] of STEMS) if (c.toLowerCase().startsWith(p.toLowerCase())) return v;
+  return code || "Sonstiges";
+};
+const hjOf = (iso: string) => { const y = +iso.slice(0, 4), m = +iso.slice(5, 7); const sy = m >= 8 ? y : y - 1; return (13 + sy - 2026) + (m >= 8 || m === 1 ? "/I" : "/II"); };
+const artOf = (t: any) => { const n = `${t?.name || ""} ${t?.longname || ""}`; return /klausur/i.test(n) ? "Klausur" : /mdl|mündl/i.test(n) ? "Mündlich" : /schr|lnw|test|kontroll/i.test(n) ? "LK" : /präs|vortrag/i.test(n) ? "Präsentation" : "Sonstiges"; };
+
+const cleanTitle = (name: string, code: string, t: any) => {
+  let n = String(name || "");
+  if (code) n = n.split(code).join("");
+  n = n.replace(/^BGY[-_ ]?\w*?_/i, "").replace(/^[\s_:\-–]+/, "").trim();
+  if (n) return n;
+  const ln = String(t?.longname || t?.name || "");
+  return /klausur/i.test(ln) ? "Klausur" : /mdl|mündl/i.test(ln) ? "Mündliche Note" : /prakt/i.test(ln) ? "Praktische Leistung" : /schr/i.test(ln) ? "Schriftliche Leistungskontrolle" : "Note";
+};
+export async function fetchGrades(s: any, longMap: Record<string, string>) {
+  const now = new Date(), y = now.getMonth() >= 7 ? now.getFullYear() : now.getFullYear() - 1;
+  const out: any[] = [];
+  for (const sy of [y - 1, y]) {
+    const r = await fetch(`${s.base}/WebUntis/api/classreg/grade/gradeList?personId=${s.personId}&startDate=${sy}0801&endDate=${sy + 1}0731`, { headers: { ...s.hdr, Cookie: s.cookie }, redirect: "manual" });
+    if (!r.ok) throw new Error("Noten: Status " + r.status);
+    const j = await r.json();
+    for (const x of j?.data || []) {
+      const g = x.grade || {}, pts = g.mark?.markDisplayValue;
+      if (pts == null || isNaN(+pts) || !g.date) continue;
+      const datum = isoFromNum(g.date);
+      out.push({ untis_id: "g-" + g.id, datum, halbjahr: hjOf(datum), code: x.subject, fach: subjOf2(x.subject, longMap), titel: cleanTitle(g.exam?.name, x.subject, g.examType), art: artOf(g.examType), typ: g.examType?.longname || g.examType?.name || "", gewicht: +g.examType?.weightFactor || 1, punkte: +pts, text: g.text || "" });
+    }
+  }
+  return out;
+}
+
+// Abgleich: verknüpft vorhandene (eigene/Notan-)Noten mit WebUntis, legt fehlende an, meldet Abweichungen
+export async function syncGrades(userId: string, rest: any, ug: any[], dry = false) {
+  const mine: any[] = await (await rest(`grades?select=id,fach,titel,art,punkte,datum,halbjahr,untis_id,untis_punkte,konflikt,quelle&user_id=eq.${userId}`)).json();
+  const isK = (a: string) => a === "Klausur";
+  const byUid = new Map(mine.filter((g) => g.untis_id).map((g) => [g.untis_id, g]));
+  const ops: any[] = [], neu: any[] = [], konf: any[] = [];
+  const free = mine.filter((g) => !g.untis_id);
+  const dist = (a: string, b: string) => Math.abs(new Date(a).getTime() - new Date(b).getTime());
+  const take = (u: any, pred: (g: any) => boolean) => { const c = free.filter((g) => g.fach === u.fach && g.halbjahr === u.halbjahr && pred(g)).sort((a, b) => dist(a.datum, u.datum) - dist(b.datum, u.datum))[0]; if (c) free.splice(free.indexOf(c), 1); return c; };
+  const pending: any[] = [];
+  for (const u of ug) {
+    const ex = byUid.get(u.untis_id);
+    if (ex) {
+      if (+ex.untis_punkte !== u.punkte) {
+        const k = +ex.punkte !== u.punkte;
+        ops.push({ id: ex.id, patch: { untis_punkte: u.punkte, konflikt: k } });
+        if (k) konf.push({ ...u, mein: +ex.punkte });
+      }
+      continue;
+    }
+    pending.push(u);
+  }
+  // 1) gleiche Punkte, gleiche Art (Klausur/sonstige) -> verknüpfen
+  const rest1: any[] = [];
+  for (const u of pending) { const m = take(u, (g) => +g.punkte === u.punkte && isK(g.art) === isK(u.art)); if (m) ops.push({ id: m.id, patch: link(u, m, false) }); else rest1.push(u); }
+  // 2) gleiche Punkte, andere Art -> verknüpfen
+  const rest2: any[] = [];
+  for (const u of rest1) { const m = take(u, (g) => +g.punkte === u.punkte); if (m) ops.push({ id: m.id, patch: link(u, m, false) }); else rest2.push(u); }
+  // 3) gleiche Art, andere Punkte -> verknüpfen + Abweichung
+  for (const u of rest2) {
+    const m = take(u, (g) => isK(g.art) === isK(u.art));
+    if (m) { ops.push({ id: m.id, patch: link(u, m, true) }); konf.push({ ...u, mein: +m.punkte }); }
+    else neu.push(u);
+  }
+  function link(u: any, m: any, k: boolean) { return { untis_id: u.untis_id, untis_punkte: u.punkte, konflikt: k, datum: u.datum, halbjahr: u.halbjahr, titel: u.titel, art: u.art, ...(m.quelle === "notan" ? { quelle: "notan+untis" } : { quelle: m.quelle === "manuell" ? "manuell+untis" : m.quelle }) }; }
+  if (dry) return { untis: ug.length, verknuepft: ops.length, neu: neu.map((u) => `${u.halbjahr} ${u.fach} ${u.art} ${u.punkte} (${u.code}, ${u.titel})`), konflikte: konf.map((u) => `${u.halbjahr} ${u.fach} ${u.titel}: WebUntis ${u.punkte}, eingetragen ${u.mein}`), codes: [...new Set(ug.map((u) => u.code + "→" + u.fach))], arten: [...new Set(ug.map((u) => u.typ + "→" + u.art))], freiUebrig: free.length };
+  for (const o of ops) await rest(`grades?id=eq.${o.id}`, { method: "PATCH", headers: { Prefer: "return=minimal" }, body: JSON.stringify(o.patch) });
+  if (neu.length) await rest("grades?on_conflict=user_id,untis_id", { method: "POST", headers: { Prefer: "resolution=ignore-duplicates,return=minimal" }, body: JSON.stringify(neu.map((u) => ({ user_id: userId, untis_id: u.untis_id, untis_punkte: u.punkte, fach: u.fach, titel: u.titel, art: u.art, punkte: u.punkte, gewicht: 1, datum: u.datum, halbjahr: u.halbjahr, quelle: "untis" }))) });
+  return { neu, konf };
+}
+
 // ---------- Umwandlung in den Wochenplan der Webseite ----------
 const hhmm = (t: number | string) => { const s = String(t).padStart(4, "0"); return s.slice(0, 2) + ":" + s.slice(2); };
 const toMin = (t: string) => +t.slice(0, 2) * 60 + +t.slice(3);
@@ -242,7 +319,11 @@ export async function fetchPlan(env: Record<string, string | undefined>) {
   try { dated = await fetchDated(s, weekRange(0)[0], weekRange(1)[1]); } catch { dated = null; }
   let homework: any[] | null = null, hwError = "";
   try { const a = new Date(); a.setDate(a.getDate() - 7); const b = new Date(); b.setDate(b.getDate() + 42); homework = await fetchHomework(s, a, b); } catch (e) { hwError = String((e as Error).message || e); }
-  return { plan: best.plan, raw: best.raw, week: yyyymmdd(best.from), dated, homework, hwError };
+  const longMap: Record<string, string> = {};
+  for (const w of weeks) for (const l of w.raw) for (const su of l.su || []) if (su?.name) longMap[su.name] = su.longname || su.name;
+  let grades: any[] | null = null, grError = "";
+  try { grades = await fetchGrades(s, longMap); } catch (e) { grError = String((e as Error).message || e); }
+  return { plan: best.plan, raw: best.raw, week: yyyymmdd(best.from), dated, homework, hwError, grades, grError };
 }
 
 // ---------- HTTP ----------
@@ -289,7 +370,8 @@ async function handler(req: Request): Promise<Response> {
   }
 
   try {
-    const { plan: fresh, raw, week, dated, homework, hwError } = await fetchPlan(env);
+    const { plan: fresh, raw, week, dated, homework, hwError, grades, grError } = await fetchPlan(env);
+    if (body.gradesDry) return json({ ok: true, grError, dry: grades ? await syncGrades(userId!, rest, grades, true) : null });
     if (body.debug) return json({ ok: true, week, lessons: raw.slice(0, 5), plan: fresh, dated: (dated || []).slice(0, 8), homework, hwError });
     if (!fresh.length) return json({ ok: true, skipped: "WebUntis hat keine Stunden geliefert (Ferien?). Plan bleibt unverändert." });
     const old: any[] = Array.isArray(row?.plan) ? row.plan : [];
@@ -313,7 +395,17 @@ async function handler(req: Request): Promise<Response> {
       const hw = await rest("entries?on_conflict=user_id,untis_id", { method: "POST", headers: { Prefer: "resolution=merge-duplicates,return=minimal" }, body: JSON.stringify(rows) });
       if (hw.ok) hwCount = rows.length;
     }
-    return json({ ok: true, count: fresh.length, week, syncedAt, plan: merged, dated: dated ?? undefined, homework: hwCount, hwError: hwError || undefined });
+    let gr: any = null;
+    if (grades && grades.length) {
+      try {
+        gr = await syncGrades(userId!, rest, grades);
+        const msgs: any[] = [];
+        if (gr.konf.length) msgs.push({ title: gr.konf.length === 1 ? "Noten-Abweichung" : `${gr.konf.length} Noten-Abweichungen`, body: gr.konf.slice(0, 4).map((u: any) => `${u.fach} – ${u.titel}: WebUntis ${String(u.punkte).replace(".", ",")} P., bei dir ${String(u.mein).replace(".", ",")} P.`).join("\n"), tag: "noten-konflikt", url: "./handy.html#noten" });
+        if (gr.neu.length && gr.neu.length <= 10) msgs.push({ title: gr.neu.length === 1 ? "Neue Note in WebUntis" : `${gr.neu.length} neue Noten in WebUntis`, body: gr.neu.slice(0, 4).map((u: any) => `${u.fach} – ${u.titel}: ${String(u.punkte).replace(".", ",")} Punkte`).join("\n"), tag: "noten-neu", url: "./handy.html#noten" });
+        for (const m of msgs) await fetch(`${URL_}/functions/v1/push`, { method: "POST", headers: { "Content-Type": "application/json", Authorization: `Bearer ${ANON}`, "x-cron-secret": env.CRON_SECRET || "" }, body: JSON.stringify({ custom: { uid: userId, ...m } }) }).catch(() => {});
+      } catch (e) { gr = { error: String((e as Error).message || e) }; }
+    }
+    return json({ ok: true, count: fresh.length, week, syncedAt, plan: merged, dated: dated ?? undefined, homework: hwCount, hwError: hwError || undefined, noten: gr ? { neu: gr.neu?.length ?? 0, konflikte: gr.konf?.length ?? 0, error: gr.error } : undefined, grError: grError || undefined });
   } catch (e) {
     return json({ ok: false, error: String((e as Error).message || e) }, 502);
   }

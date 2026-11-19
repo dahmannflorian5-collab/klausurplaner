@@ -60,6 +60,12 @@ Deno.serve(async (req) => {
   }
   if (!env.CRON_SECRET || cronHeader !== env.CRON_SECRET) return json({ ok: false, error: "Nicht erlaubt." }, 401);
 
+  // ----- Einzelne Mitteilung von einer anderen Funktion (z. B. Noten-Abgleich) -----
+  if (body.custom && body.custom.uid) {
+    const c = body.custom;
+    return json({ ok: true, ...(await sendTo(c.uid, { title: c.title || "Klausurplaner", body: c.body || "", tag: c.tag || "info", url: c.url || "./handy.html" })) });
+  }
+
   // ----- Zeitplan -----
   const now = berlin();
   const mode = body.mode || (now.hour === 7 && now.min < 15 ? "morgen" : now.hour === 19 && now.min >= 30 && now.min < 45 ? "abend" : "");
