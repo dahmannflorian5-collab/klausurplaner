@@ -50,9 +50,9 @@ Deno.serve(async (req) => {
   if (datedDays.has(sday)) {
     les = dated.filter((d) => d.datum === sday).map((d) => ({ von: d.von, bis: d.bis, fach: short(d.fach), raum: d.raum, aus: d.status === "CANCELLED", notiz: d.notiz }));
   } else {
-    les = plan.filter((p) => p.tag === wd(sday)).map((p) => ({ von: p.von, bis: p.bis, fach: short(p.fach), raum: p.raum, aus: false, notiz: "" }));
+    les = plan.filter((p) => (p.datum ? p.datum === sday : p.tag === wd(sday))).map((p) => ({ von: p.von, bis: p.bis, fach: short(p.fach), raum: p.raum, aus: false, notiz: "" }));
   }
-  les.push(...plan.filter((p) => !p.untis && p.tag === wd(sday) && datedDays.has(sday)).map((p) => ({ von: p.von, bis: p.bis, fach: short(p.fach), raum: p.raum, aus: false, notiz: "" })));
+  les.push(...plan.filter((p) => !p.untis && (p.datum ? p.datum === sday : p.tag === wd(sday)) && datedDays.has(sday)).map((p) => ({ von: p.von, bis: p.bis, fach: short(p.fach), raum: p.raum, aus: false, notiz: "" })));
   les.sort((a, b) => a.von.localeCompare(b.von));
   les = les.filter((l, i, arr) => arr.findIndex((x) => x.von === l.von && x.fach === l.fach) === i);
   const lines = les.map((l) => `${l.von}  ${l.fach}${l.raum ? " · " + l.raum : ""}${l.aus ? " – fällt aus" : ""}`);
