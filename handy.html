@@ -593,7 +593,12 @@ function queue(op){
   if (op.k === 'plan' && outbox.some(o => o.k === 'plan')) { saveCache(); flush(); return; }
   outbox.push(op); saveCache(); flush();
 }
-async function flush(){
+let flushP = null;
+function flush(){
+  if (!flushP) flushP = doFlush().finally(() => { flushP = null; });
+  return flushP;
+}
+async function doFlush(){
   if (flushing || !sb || !uid) return;
   if (!navigator.onLine){ if (outbox.length) setSync('Offline · wird später abgeglichen'); return; }
   flushing = true;
@@ -1016,25 +1021,53 @@ function wireDr(o){
 
 /* ---------- Dateien ---------- */
 const safeName = n => n.normalize('NFKD').replace(/[̀-ͯ]/g, '').replace(/[^\w.\-]+/g, '_').slice(-80) || 'datei';
-async function upload(o, list){
-  const fs = [...list]; if (!fs.length) return;
-  if (!navigator.onLine){ toast('Dateien hochladen geht nur mit Internet'); return; }
-  await flush();
-  if (!isFach(o) && outbox.some(op => op.row && op.row.id === o.id)){ toast('Der Eintrag ist noch nicht gespeichert. Bitte gleich noch einmal versuchen.'); return; }
-  const msg = $('upmsg') || $('famsg'); let n = 0;
-  for (const f of fs){
-    if (f.size > 50 * 1024 * 1024){ toast(f.name + ' ist größer als 50 MB'); continue; }
-    if (msg){ msg.hidden = false; msg.textContent = 'Lade ' + f.name + ' hoch …'; }
-    const id = uuid(), path = `${uid}/${isFach(o) ? 'fach-' + safeName(o.__fach) : o.id}/${id}-${safeName(f.name)}`;
-    const up = await sb.storage.from('dateien').upload(path, f, {contentType: f.type || undefined});
-    if (up.error){ toast('Hochladen fehlgeschlagen: ' + up.error.message); continue; }
-    const row = {id, user_id: uid, entry_id: isMod(o) || isFach(o) ? null : o.id, module_id: isMod(o) ? o.id : null, fach: isFach(o) ? o.__fach : null, name: f.name, size: f.size, mime: f.type || null, path};
-    const r = await sb.from('files').insert(row);
-    if (r.error){ sb.storage.from('dateien').remove([path]); toast('Speichern fehlgeschlagen: ' + r.error.message); continue; }
-    files.push(row); n++;
+const sleep = ms => new Promise(r => setTimeout(r, ms));
+async function retry(fn, n = 3){
+  let r;
+  for (let i = 0; i < n; i++){
+    try { r = await fn(); } catch(e){ r = {error: {message: String(e && e.message || e)}}; }
+    if (!r || !r.error) return r;
+    if (/already exists|duplicate/i.test(r.error.message || '')) return {error: null};
+    if (i < n - 1) await sleep(700 * (i + 1));
   }
+  return r;
+}
+// Sorgt dafür, dass der Eintrag bzw. das Modul auf dem Server existiert, bevor Dateien daran hängen
+async function ensureOwner(o){
+  if (isFach(o)) return true;
+  await flush();
+  if (!outbox.some(op => op.row && op.row.id === o.id)) return true;
+  const r = await retry(() => isMod(o) ? sb.from('modules').upsert(rowM(o)) : sb.from('entries').upsert(rowE(o)));
+  if (r && r.error){ toast('Eintrag konnte nicht gespeichert werden: ' + r.error.message); return false; }
+  return true;
+}
+let upQ = Promise.resolve();
+function upload(o, list){ const fs = [...list]; upQ = upQ.then(() => doUpload(o, fs)).catch(e => toast('Hochladen fehlgeschlagen: ' + (e && e.message || e))); return upQ; }
+async function doUpload(o, fs){
+  if (!fs.length) return;
+  if (!navigator.onLine){ toast('Dateien hochladen geht nur mit Internet'); return; }
+  if (!sb || !uid){ toast('Bitte zuerst anmelden'); return; }
+  const msg = () => $('upmsg') || $('famsg');
+  const show = t => { const m = msg(); if (m){ m.hidden = !t; m.textContent = t || ''; } };
+  show('Bereite Hochladen vor …');
+  if (!(await ensureOwner(o))){ show(''); return; }
+  let n = 0; const bad = [];
+  for (const f of fs){
+    if (f.size > 50 * 1024 * 1024){ bad.push(f.name + ' (größer als 50 MB)'); continue; }
+    if (!f.size){ bad.push(f.name + ' (leere Datei)'); continue; }
+    show('Lade ' + f.name + ' hoch …');
+    const id = uuid(), path = `${uid}/${isFach(o) ? 'fach-' + safeName(o.__fach) : o.id}/${id}-${safeName(f.name)}`;
+    const up = await retry(() => sb.storage.from('dateien').upload(path, f, {contentType: f.type || 'application/octet-stream', upsert: true}));
+    if (up && up.error){ bad.push(f.name + ' (' + up.error.message + ')'); continue; }
+    const row = {id, user_id: uid, entry_id: isMod(o) || isFach(o) ? null : o.id, module_id: isMod(o) ? o.id : null, fach: isFach(o) ? o.__fach : null, name: f.name, size: f.size, mime: f.type || null, path};
+    const r = await retry(() => sb.from('files').upsert(row));
+    if (r && r.error){ sb.storage.from('dateien').remove([path]); bad.push(f.name + ' (' + r.error.message + ')'); continue; }
+    files.push(row); n++; saveCache(); if (sel) drawDr(); render();
+  }
+  show('');
   saveCache(); if (sel) drawDr(); render();
-  if (n) toast(n === 1 ? 'Datei hochgeladen' : n + ' Dateien hochgeladen');
+  if (bad.length) toast((n ? n + ' hochgeladen, ' : '') + 'nicht geklappt: ' + bad.join(', '));
+  else if (n) toast(n === 1 ? 'Datei hochgeladen' : n + ' Dateien hochgeladen');
 }
 async function delFile(id){
   const f = files.find(x => x.id === id); if (!f) return;
