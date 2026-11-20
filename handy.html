@@ -378,6 +378,17 @@ dialog{width:100%;max-width:100%;margin:auto 0 0;border-radius:20px 20px 0 0;max
 .gko{background:color-mix(in srgb,var(--red) 7%,transparent)}
 .gkbox{border:1.5px solid var(--red);background:color-mix(in srgb,var(--red) 6%,var(--card));border-radius:14px;padding:12px 14px;margin:12px 0}.gkbox>b{color:var(--red);display:block;margin-bottom:6px}
 .gkr{display:flex;flex-wrap:wrap;gap:8px;align-items:center;justify-content:space-between;padding:8px 0;border-top:1px solid var(--line);font-size:13.5px}.gkr small{color:var(--mut)}.gkb{display:flex;gap:6px;flex-wrap:wrap}.gkb .btn{font-size:12.5px;padding:6px 10px}
+.lkf input,.fadd select{font-size:15px;color:var(--ink);background:var(--soft);border:1px solid var(--line);border-radius:9px;padding:8px 10px;width:100%}.fadd label{font-size:13px;color:var(--mut);margin-bottom:4px}.fadd select{margin-top:4px}
+.lkf{display:flex;gap:6px;margin:8px 0;flex-wrap:wrap}.lkf input{flex:1 1 100%;min-width:0}.lkf input+input{flex:1 1 120px}.lkf .btn{flex:0 0 auto}
+.fi.lk{font-size:16px;font-weight:700}
+.fint{color:var(--mut);margin:4px 0 14px}
+.fgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:10px}
+.fcard{display:flex;flex-direction:column;align-items:flex-start;gap:4px;text-align:left;padding:14px 14px 12px;border-radius:12px;border:1px solid var(--line,rgba(127,127,127,.25));border-left:5px solid var(--c);background:color-mix(in srgb,var(--c) 9%,transparent);color:var(--ink);cursor:pointer;font:inherit}
+.fcard b{font-size:16px}.fcard small{color:var(--mut);font-size:12.5px}.fcard:hover{background:color-mix(in srgb,var(--c) 16%,transparent)}
+.fhd{margin:6px 0 12px}.fhd h2{margin:6px 0 0;font-size:24px}
+.fadd{padding:12px 14px;border-radius:12px;border:1px solid color-mix(in srgb,var(--c) 35%,transparent);background:color-mix(in srgb,var(--c) 6%,transparent);margin-bottom:16px}
+.fadd h3{margin:0 0 8px;font-size:15px}.fadd label{display:block}
+.fsec h3 small{color:var(--mut);font-weight:400;font-size:12.5px}
 </style>
 </head>
 <body>
@@ -446,6 +457,7 @@ dialog{width:100%;max-width:100%;margin:auto 0 0;border-radius:20px 20px 0 0;max
     <label class="chk"><input type="checkbox" id="fVl"> Termin steht noch nicht fest (wird blass angezeigt)</label>
     <label id="lErg">Ergebnis (Note oder Punkte)<input id="fErg" autocomplete="off" placeholder="nach der Rückgabe eintragen"></label>
     <label id="lFiles">Dateien anhängen<input id="fFiles" type="file" multiple></label>
+    <label id="lLink">Link anhängen (optional)<input id="fLink" type="url" inputmode="url" placeholder="https://…" autocomplete="off"></label>
     <div class="ft"><button type="button" class="btn" data-x="dlg">Abbrechen</button><button class="btn pri">Speichern</button></div>
   </form>
 </dialog>
@@ -519,6 +531,7 @@ const I = {
   pru:'<path d="M7 3.5h7l4 4v13H7z"/><path d="M14 3.5v4h4M10 13h5M10 17h5"/>',
   mod:'<path d="M12 3 3 7.5l9 4.5 9-4.5z"/><path d="m3 12 9 4.5 9-4.5M3 16.5 12 21l9-4.5"/>',
   std:'<circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2"/>',
+  fae:'<path d="M4 5.5A1.5 1.5 0 0 1 5.5 4H10v16H5.5A1.5 1.5 0 0 1 4 18.5z"/><path d="M10 4h4v16h-4z"/><path d="m15.5 5.2 3.6-.9 2.6 15.4-3.6.9z"/>',
   dat:'<path d="M3.5 7a2 2 0 0 1 2-2h4l2 2.5h7a2 2 0 0 1 2 2V18a2 2 0 0 1-2 2h-13a2 2 0 0 1-2-2z"/>',
   anw:'<circle cx="10" cy="8" r="3.5"/><path d="M3.5 20c.8-3.6 3.3-5.5 6.5-5.5 1.4 0 2.6.3 3.6 1M15 18l2 2 4-4.5"/>',
   chat:'<path d="M4 5.5A2.5 2.5 0 0 1 6.5 3h11A2.5 2.5 0 0 1 20 5.5v8a2.5 2.5 0 0 1-2.5 2.5H10l-4.5 4v-4A2.5 2.5 0 0 1 3 13.5z" transform="translate(.5 .5)"/><path d="M8.5 9.5h7M8.5 12.5h4"/>',
@@ -800,7 +813,10 @@ function getEv(id){
 const isMod = o => o && o.name !== undefined && o.leistungen !== undefined;
 const cbx = e => e.typ === 'aufgabe' ? `<input type="checkbox" class="cb" data-done="${e.id}" ${e.done ? 'checked' : ''} aria-label="Erledigt">` : '';
 const tag = e => e.typ === 'klausur' ? `<span class="tag">${esc(e.art || 'Klausur')}</span>` : '';
-const filesOf = o => files.filter(f => isMod(o) ? f.module_id === o.id : f.entry_id === o.id);
+const isFach = o => !!o && o.__fach !== undefined;
+const fachKey = s => ({__fach: s, id: 'fach:' + s, name: s});
+const filesOf = o => files.filter(f => isFach(o) ? (!f.entry_id && !f.module_id && f.fach === o.__fach) : isMod(o) ? f.module_id === o.id : f.entry_id === o.id);
+const hostOf = u => { try { return new URL(u).hostname.replace(/^www\./, ''); } catch(e){ return ''; } };
 
 function layout(evs){
   evs.sort((a,b) => a.s - b.s || b.en - a.en);
@@ -820,6 +836,7 @@ function modCur(fach){
   return ms.find(m => diff(m.von) <= 0 && diff(m.bis) >= 0) || ms.find(m => diff(m.von) > 0) || ms[ms.length - 1];
 }
 function fileRow(f, rm){
+  if (f.url) return `<div class="file"><a class="fl" href="${esc(f.url)}" target="_blank" rel="noopener"><span class="fi lk" style="--fc:#3e63dd">↗</span><div><b>${esc(f.name || hostOf(f.url))}</b><small>${esc(hostOf(f.url) || f.url)}</small></div></a>${rm ? `<button class="icb rmf" data-rmf="${f.id}" aria-label="Link löschen">×</button>` : ''}</div>`;
   const ext = (f.name.split('.').pop() || '').toLowerCase(), img = /^image\//.test(f.mime || '') || /^(jpe?g|png|gif|webp|heic)$/.test(ext);
   const fc = ext === 'pdf' ? '#e5484d' : img ? '#3d9a3d' : /docx?|pages|odt/.test(ext) ? '#3e63dd' : /pptx?|key|odp/.test(ext) ? '#e08a1f' : /xlsx?|csv|numbers/.test(ext) ? '#0f8a80' : '#64748b';
   return `<div class="file"><a class="fl" data-path="${esc(f.path)}" target="_blank" rel="noopener" href="#"><span class="fi" style="--fc:${fc}">${img ? `<img data-thumb="${esc(f.path)}" alt="">` : esc(ext.toUpperCase().slice(0,4))}</span><div><b>${esc(f.name)}</b><small>${size(f.size)}</small></div></a>${rm ? `<button class="icb rmf" data-rmf="${f.id}" aria-label="Datei löschen">×</button>` : ''}</div>`;
@@ -834,13 +851,46 @@ async function fillLinks(root){
   root.querySelectorAll('[data-thumb]').forEach(i => { if (m[i.dataset.thumb]) i.src = m[i.dataset.thumb]; });
 }
 const LIMIT = 1024 * 1024 * 1024;
-const ownerOf = f => f.entry_id ? entries.find(e => e.id === f.entry_id) : mods.find(m => m.id === f.module_id);
-const finished = o => !o ? true : isMod(o) ? (o.status === 'Erledigt' || diff(o.bis) < -14) : (diff(o.datum) < -14 && (o.typ !== 'aufgabe' || o.done));
+/* ---------- Fächer: Übersichten und Zusammenfassungen ---------- */
+let faeSel = null, faeMod = '';
+const faeSubs = () => [...new Set(Object.keys(SUBJ).concat(files.filter(f => f.fach).map(f => f.fach)))];
+const matOf = s => files.filter(f => (!f.entry_id && !f.module_id && f.fach === s) || (f.module_id && (modById(f.module_id) || {}).fach === s));
+function vFae(back){
+  if (!faeSel || !faeSubs().includes(faeSel)){
+    faeSel = null;
+    return back + `<p class="fint">Wähle ein Fach, um Übersichten, Zusammenfassungen und Links zu den Lernbereichen zu sammeln.</p><div class="fgrid">${faeSubs().map(s => { const n = matOf(s).length, m = mods.filter(x => x.fach === s).length;
+      return `<button class="fcard" data-fae="${esc(s)}" style="--c:${SUBJ[s] || '#8b95a3'}"><b>${esc(s)}</b><small>${n ? n + (n === 1 ? ' Eintrag' : ' Einträge') : 'Noch leer'}${m ? ' · ' + m + (m === 1 ? ' Modul' : ' Module') : ''}</small></button>`; }).join('')}</div>`;
+  }
+  const s = faeSel, c = SUBJ[s] || '#8b95a3', ms = mods.filter(m => m.fach === s).sort((a, b) => a.von.localeCompare(b.von)), gen = filesOf(fachKey(s));
+  if (faeMod && !ms.some(m => m.id === faeMod)) faeMod = '';
+  const empty = '<p class="note" style="color:var(--mut)">Noch nichts hinterlegt.</p>';
+  return `<button class="back" data-fae="">‹ Alle Fächer</button><div class="fhd" style="--c:${c}"><span class="pill" style="--c:${c}"><i></i>Fach</span><h2>${esc(s)}</h2></div>
+    <div class="fadd" style="--c:${c}"><h3>Übersicht oder Zusammenfassung hinzufügen</h3>
+      <label>Lernbereich / Modul (optional)<select id="faMod"><option value="">Allgemein – ganzes Fach</option>${ms.map(m => `<option value="${m.id}"${m.id === faeMod ? ' selected' : ''}>${esc(m.name)}</option>`).join('')}</select></label>
+      ${linkForm('fa')}
+      <label class="drop" id="fadrop"><input type="file" id="fafin" multiple hidden>Dateien hierher ziehen oder <u>auswählen</u></label><p class="up" id="famsg" hidden></p></div>
+    <div class="sec fsec"><h3>Allgemein</h3>${gen.map(f => fileRow(f, true)).join('') || empty}</div>
+    ${ms.map(m => `<div class="sec fsec"><h3><button class="lnk" data-id="${m.id}">${esc(m.name)}</button> <small>${dshort(m.von)} – ${dshort(m.bis)}</small></h3>${filesOf(m).map(f => fileRow(f, true)).join('') || empty}</div>`).join('')}`;
+}
+function wireFae(){
+  fillLinks($('body'));
+  const sel_ = $('faMod'); if (!sel_) return;
+  sel_.onchange = () => { faeMod = sel_.value; };
+  const target = () => faeMod ? modById(faeMod) : fachKey(faeSel);
+  wireLink('fa', target);
+  const dz = $('fadrop');
+  $('fafin').onchange = ev => { upload(target(), ev.target.files); ev.target.value = ''; };
+  dz.ondragover = ev => { ev.preventDefault(); dz.classList.add('over'); };
+  dz.ondragleave = () => dz.classList.remove('over');
+  dz.ondrop = ev => { ev.preventDefault(); dz.classList.remove('over'); upload(target(), ev.dataTransfer.files); };
+}
+const ownerOf = f => f.entry_id ? entries.find(e => e.id === f.entry_id) : f.module_id ? mods.find(m => m.id === f.module_id) : f.fach ? fachKey(f.fach) : undefined;
+const finished = o => !o ? true : isFach(o) ? false : isMod(o) ? (o.status === 'Erledigt' || diff(o.bis) < -14) : (diff(o.datum) < -14 && (o.typ !== 'aufgabe' || o.done));
 function storageHtml(){
-  const used = files.reduce((s, f) => s + (+f.size || 0), 0), pct = Math.min(100, used / LIMIT * 100);
-  const old = files.filter(f => finished(ownerOf(f))).sort((a, b) => b.size - a.size);
+  const real = files.filter(f => f.path), used = real.reduce((s, f) => s + (+f.size || 0), 0), pct = Math.min(100, used / LIMIT * 100);
+  const old = real.filter(f => finished(ownerOf(f))).sort((a, b) => b.size - a.size);
   const sum = old.reduce((s, f) => s + (+f.size || 0), 0);
-  return `<div class="stor"><div class="ms"><b>Speicher</b><span>${size(used)} von 1 GB belegt · ${files.length} ${files.length === 1 ? 'Datei' : 'Dateien'}</span></div>
+  return `<div class="stor"><div class="ms"><b>Speicher</b><span>${size(used)} von 1 GB belegt · ${real.length} ${real.length === 1 ? 'Datei' : 'Dateien'}${files.length > real.length ? ' · ' + (files.length - real.length) + ' Links' : ''}</span></div>
     <div class="prog big"><i style="width:${Math.max(pct, used ? 1 : 0)}%;background:${pct > 85 ? 'var(--red)' : 'var(--ink)'}"></i></div>
     ${old.length ? `<details class="clean"><summary>Platz schaffen: ${old.length} ${old.length === 1 ? 'Datei' : 'Dateien'} aus abgeschlossenen Modulen und Aufgaben (${size(sum)})</summary>
       <p class="up">Vorgeschlagen werden Dateien von Modulen, die beendet sind, und von Prüfungen und erledigten Aufgaben, die mehr als zwei Wochen zurückliegen.</p>
@@ -859,9 +909,9 @@ async function cleanUp(){
   toast(ids.length + (ids.length === 1 ? ' Datei' : ' Dateien') + ' gelöscht, ' + size(fs.reduce((s, f) => s + (+f.size || 0), 0)) + ' frei');
 }
 function renderFiles(){
-  const owners = entries.concat(mods).filter(o => filesOf(o).length);
-  $('body').innerHTML = storageHtml() + (owners.length ? '<div class="ls">' + owners.map(o => `<div class="dh">${esc(o.titel || o.name)}<span>${isMod(o) ? 'Modul · ' + esc(o.fach) : esc(lbl(o)) + ' · ' + dshort(o.datum)}</span></div>` + filesOf(o).map(f => fileRow(f, false)).join('') + `<button class="more" data-id="${o.id}" style="margin-bottom:6px">Öffnen</button>`).join('') + '</div>'
-    : '<div class="empty">Noch keine Dateien. Öffne eine Aufgabe oder ein Modul und ziehe Dateien hinein.</div>');
+  const owners = entries.concat(mods).concat([...new Set(files.filter(f => !f.entry_id && !f.module_id && f.fach).map(f => f.fach))].map(fachKey)).filter(o => filesOf(o).length);
+  $('body').innerHTML = storageHtml() + (owners.length ? '<div class="ls">' + owners.map(o => `<div class="dh">${esc(o.titel || o.name)}<span>${isFach(o) ? 'Fach · Übersichten' : isMod(o) ? 'Modul · ' + esc(o.fach) : esc(lbl(o)) + ' · ' + dshort(o.datum)}</span></div>` + filesOf(o).map(f => fileRow(f, false)).join('') + (isFach(o) ? `<button class="more" data-fae="${esc(o.__fach)}" style="margin-bottom:6px">Öffnen</button>` : `<button class="more" data-id="${o.id}" style="margin-bottom:6px">Öffnen</button>`)).join('') + '</div>'
+    : '<div class="empty">Noch keine Dateien oder Links. Öffne eine Aufgabe, ein Modul oder ein Fach und füge Dateien oder Links hinzu.</div>');
   fillLinks($('body'));
 }
 
@@ -877,7 +927,7 @@ function gcal(e){
 function openDr(id){ sel = id; drawDr(); $('dr').classList.add('open'); }
 function closeDr(){ sel = null; $('dr').classList.remove('open'); }
 function filesSec(o){
-  return `<div class="sec"><h3>Dateien</h3>${filesOf(o).map(f => fileRow(f, true)).join('')}<label class="drop" id="drop"><input type="file" id="fin" multiple hidden>Dateien hierher ziehen oder <u>auswählen</u></label><p class="up" id="upmsg" hidden></p></div>`;
+  return `<div class="sec"><h3>Dateien und Links</h3>${filesOf(o).map(f => fileRow(f, true)).join('')}${linkForm('')}<label class="drop" id="drop"><input type="file" id="fin" multiple hidden>Dateien hierher ziehen oder <u>auswählen</u></label><p class="up" id="upmsg" hidden></p></div>`;
 }
 function drawDr(){
   const e = sel && getEv(sel); if (!e){ closeDr(); return; }
@@ -935,8 +985,24 @@ function sure(ev, fn, txt){
   const b = ev.currentTarget;
   if (b.dataset.sure) fn(); else { b.dataset.sure = 1; b.textContent = txt || 'Wirklich löschen?'; }
 }
+function linkForm(p){ return `<div class="lkf"><input id="${p}lkU" type="url" inputmode="url" placeholder="Link einfügen, z. B. https://…" autocomplete="off"><input id="${p}lkN" placeholder="Name (optional)" autocomplete="off"><button type="button" class="btn" id="${p}lkB">+ Link</button></div>`; }
+function wireLink(p, target){
+  const b = $(p + 'lkB'); if (!b) return;
+  const go_ = () => { if (addLink(target(), $(p + 'lkU').value, $(p + 'lkN').value)) { $(p + 'lkU').value = ''; $(p + 'lkN').value = ''; } };
+  b.onclick = go_; $(p + 'lkU').onkeydown = $(p + 'lkN').onkeydown = ev => { if (ev.key === 'Enter'){ ev.preventDefault(); go_(); } };
+}
+function normUrl(u){
+  u = String(u || '').trim(); if (!u) return '';
+  if (!/^[a-z][a-z0-9+.-]*:/i.test(u)) u = 'https://' + u;
+  try { const x = new URL(u); return /^https?:$/.test(x.protocol) && x.hostname.includes('.') ? x.href : ''; } catch(e){ return ''; }
+}
+function addLink(o, u, n){
+  const url = normUrl(u); if (!url){ toast('Bitte einen gültigen Link eingeben'); return false; }
+  const row = {id: uuid(), user_id: uid, entry_id: isFach(o) || isMod(o) ? null : o.id, module_id: isMod(o) ? o.id : null, fach: isFach(o) ? o.__fach : null, name: String(n || '').trim() || hostOf(url), size: 0, mime: null, path: null, url};
+  files.push(row); queue({k:'up', t:'files', row}); saveCache(); if (sel) drawDr(); render(); toast('Link hinzugefügt'); return true;
+}
 function wireDr(o){
-  fillLinks($('dr'));
+  fillLinks($('dr')); wireLink('', () => o);
   const dz = $('drop');
   if (dz){
     $('fin').onchange = ev => { upload(o, ev.target.files); ev.target.value = ''; };
@@ -954,15 +1020,15 @@ async function upload(o, list){
   const fs = [...list]; if (!fs.length) return;
   if (!navigator.onLine){ toast('Dateien hochladen geht nur mit Internet'); return; }
   await flush();
-  if (outbox.some(op => op.row && op.row.id === o.id)){ toast('Der Eintrag ist noch nicht gespeichert. Bitte gleich noch einmal versuchen.'); return; }
-  const msg = $('upmsg'); let n = 0;
+  if (!isFach(o) && outbox.some(op => op.row && op.row.id === o.id)){ toast('Der Eintrag ist noch nicht gespeichert. Bitte gleich noch einmal versuchen.'); return; }
+  const msg = $('upmsg') || $('famsg'); let n = 0;
   for (const f of fs){
     if (f.size > 50 * 1024 * 1024){ toast(f.name + ' ist größer als 50 MB'); continue; }
     if (msg){ msg.hidden = false; msg.textContent = 'Lade ' + f.name + ' hoch …'; }
-    const id = uuid(), path = `${uid}/${o.id}/${id}-${safeName(f.name)}`;
+    const id = uuid(), path = `${uid}/${isFach(o) ? 'fach-' + safeName(o.__fach) : o.id}/${id}-${safeName(f.name)}`;
     const up = await sb.storage.from('dateien').upload(path, f, {contentType: f.type || undefined});
     if (up.error){ toast('Hochladen fehlgeschlagen: ' + up.error.message); continue; }
-    const row = {id, user_id: uid, entry_id: isMod(o) ? null : o.id, module_id: isMod(o) ? o.id : null, name: f.name, size: f.size, mime: f.type || null, path};
+    const row = {id, user_id: uid, entry_id: isMod(o) || isFach(o) ? null : o.id, module_id: isMod(o) ? o.id : null, fach: isFach(o) ? o.__fach : null, name: f.name, size: f.size, mime: f.type || null, path};
     const r = await sb.from('files').insert(row);
     if (r.error){ sb.storage.from('dateien').remove([path]); toast('Speichern fehlgeschlagen: ' + r.error.message); continue; }
     files.push(row); n++;
@@ -972,6 +1038,7 @@ async function upload(o, list){
 }
 async function delFile(id){
   const f = files.find(x => x.id === id); if (!f) return;
+  if (!f.path){ files = files.filter(x => x.id !== id); queue({k:'del', t:'files', id}); if (sel) drawDr(); render(); toast('Link gelöscht'); return; }
   if (!navigator.onLine){ toast('Löschen geht nur mit Internet'); return; }
   await sb.storage.from('dateien').remove([f.path]);
   const r = await sb.from('files').delete().eq('id', id);
@@ -980,14 +1047,14 @@ async function delFile(id){
 }
 function delEntry(e){
   const fs = filesOf(e);
-  if (fs.length && sb && navigator.onLine) sb.storage.from('dateien').remove(fs.map(f => f.path));
+  if (fs.some(f => f.path) && sb && navigator.onLine) sb.storage.from('dateien').remove(fs.filter(f => f.path).map(f => f.path));
   files = files.filter(f => f.entry_id !== e.id);
   entries = entries.filter(i => i.id !== e.id);
   queue({k:'del', t:'entries', id:e.id}); closeDr(); render(); toast('Gelöscht');
 }
 function delMod(m){
   const fs = filesOf(m);
-  if (fs.length && sb && navigator.onLine) sb.storage.from('dateien').remove(fs.map(f => f.path));
+  if (fs.some(f => f.path) && sb && navigator.onLine) sb.storage.from('dateien').remove(fs.filter(f => f.path).map(f => f.path));
   files = files.filter(f => f.module_id !== m.id);
   entries.forEach(i => { if (i.modul_id === m.id) i.modul_id = null; });
   mods = mods.filter(x => x.id !== m.id);
@@ -1015,7 +1082,7 @@ function openForm(e, pre){
   setTy(v.typ, v.art); $('tys').hidden = !!e;
   $('fTitel').value = v.titel || ''; $('fFach').value = v.fach || ''; fillMods(v.fach || '', v.modul_id || '');
   $('fDatum').value = v.datum || ''; $('fVon').value = v.von || ''; $('fBis').value = v.bis || ''; $('fRaum').value = v.raum || '';
-  $('fThema').value = v.thema || ''; $('fNotiz').value = v.notiz || ''; $('fErg').value = v.ergebnis || ''; $('fFiles').value = ''; $('fVl').checked = !!v.vorlaeufig;
+  $('fThema').value = v.thema || ''; $('fNotiz').value = v.notiz || ''; $('fErg').value = v.ergebnis || ''; $('fFiles').value = ''; $('fLink').value = ''; $('fVl').checked = !!v.vorlaeufig;
   $('dlg').showModal();
 }
 $('tys').onclick = ev => { const b = ev.target.closest('button'); if (b) setTy(b.dataset.ty); };
@@ -1025,6 +1092,7 @@ $('f').addEventListener('submit', ev => {
     datum: $('fDatum').value, von: $('fVon').value, bis: $('fBis').value, raum: $('fRaum').value.trim(), notiz: $('fNotiz').value.trim(),
     thema: fty === 'klausur' ? $('fThema').value.trim() : '', ergebnis: fty === 'klausur' ? $('fErg').value.trim() : '', vorlaeufig: $('fVl').checked};
   if (!o.titel || !o.datum) return;
+  const lk = $('fLink').value.trim(); if (lk && !normUrl(lk)){ toast('Der Link ist ungültig'); return; }
   if (o.bis && !o.von) o.bis = '';
   if (o.von && o.bis && o.bis <= o.von){ toast('„Bis“ muss nach „Von“ liegen'); return; }
   let it = editId && entries.find(i => i.id === editId);
@@ -1032,6 +1100,7 @@ $('f').addEventListener('submit', ev => {
   else { it = Object.assign({id: uuid(), typ: fty, stand: 'Nicht begonnen', done: false}, o); entries.push(it); typesOn[it.typ] = true; }
   queue({k:'up', t:'entries', row: rowE(it)});
   $('dlg').close();
+  if (lk) addLink(it, lk, '');
   const fs = [...$('fFiles').files]; if (fs.length) upload(it, fs);
   if (page === 'kal') cur = day0(pd(o.datum));
   render(); if (sel) drawDr(); toast(editId ? 'Gespeichert' : 'Eintrag angelegt');
@@ -1163,6 +1232,7 @@ function vMehr(){
     ${ln('button data-mehr="push"', I.bell, 'Mitteilungen', 'Erinnerungen morgens und abends')}
     ${ln('button data-mehr="widget"', I.widget, 'Tablet-Widget', 'Stunden und Prüfungen auf dem Startbildschirm')}
     ${ln('button data-mehr="mod"', I.mod, 'Module', mods.length + ' Module im Schuljahr')}
+    ${ln('button data-mehr="fae"', I.fae, 'Fächer', 'Übersichten, Zusammenfassungen und Links je Fach')}
     ${ln('button data-mehr="dat"', I.dat, 'Dateien', files.length + ' Dateien · ' + size(files.reduce((s, f) => s + (+f.size || 0), 0)))}
     ${ln('button data-mehr="std"', I.std, 'Stundenplan', untisMsg || (untisAt ? 'WebUntis: ' + fmtTs(untisAt) : 'Noch nicht abgeglichen'))}
     ${ln(`a href="${esc(ANW)}" target="_blank" rel="noopener"`, I.anw, 'Anwesenheit eintragen', 'Formular der Schule')}
@@ -1340,9 +1410,10 @@ function hashNav(){ if (location.hash === '#noten'){ history.replaceState(null, 
 window.addEventListener('hashchange', hashNav); setTimeout(hashNav, 600);
 function render(){
   heroCap();
-  const v = tab === 'mehr' ? (sub === 'mod' ? vMods() : sub === 'dat' ? '' : sub === 'std' ? vStd() : sub === 'noten' ? vNoten() : sub === 'push' ? vPush() : sub === 'widget' ? '<button class="back" data-mehr="">‹ Mehr</button><h3 class="sh">Tablet-Widget</h3>' + widgetHtml() : vMehr()) : tab === 'woche' ? vWoche() : tab === 'auf' ? vAuf() : tab === 'pru' ? vPru() : vHeute();
+  const v = tab === 'mehr' ? (sub === 'mod' ? vMods() : sub === 'fae' ? vFae('<button class="back" data-mehr="">‹ Mehr</button><h3 class="sh">Fächer</h3>') : sub === 'dat' ? '' : sub === 'std' ? vStd() : sub === 'noten' ? vNoten() : sub === 'push' ? vPush() : sub === 'widget' ? '<button class="back" data-mehr="">‹ Mehr</button><h3 class="sh">Tablet-Widget</h3>' + widgetHtml() : vMehr()) : tab === 'woche' ? vWoche() : tab === 'auf' ? vAuf() : tab === 'pru' ? vPru() : vHeute();
   if (tab === 'mehr' && sub === 'dat'){ renderFiles(); $('body').insertAdjacentHTML('afterbegin', '<button class="back" data-mehr="">‹ Mehr</button>'); }
   else $('body').innerHTML = v;
+  if (tab === 'mehr' && sub === 'fae') wireFae();
   $('tabs').innerHTML = TABS.map(t => `<button data-tab="${t[0]}" aria-current="${tab === t[0]}"><svg viewBox="0 0 24 24">${t[2]}</svg><span>${t[1]}</span></button>`).join('');
   $('fab').hidden = tab === 'mehr' && sub !== 'std' && sub !== 'noten';
 }
@@ -1369,7 +1440,8 @@ document.addEventListener('click', ev => {
   }
   const x = t.closest('[data-x]'); if (x){ $(x.dataset.x).close(); return; }
   const tb = t.closest('[data-tab]'); if (tb){ if (tb.dataset.tab === 'woche' && tab !== 'woche') cur = day0(new Date()); go(tb.dataset.tab); return; }
-  const mh = t.closest('[data-mehr]'); if (mh){ go('mehr', mh.dataset.mehr); if (mh.dataset.mehr === 'push') pushState().then(render); return; }
+  const fa = t.closest('[data-fae]'); if (fa){ faeSel = fa.dataset.fae || null; faeMod = ''; if (!(tab === 'mehr' && sub === 'fae')) go('mehr', 'fae'); else { render(); window.scrollTo({top: 0}); } return; }
+  const mh = t.closest('[data-mehr]'); if (mh){ if (mh.dataset.mehr === 'fae') faeSel = null; go('mehr', mh.dataset.mehr); if (mh.dataset.mehr === 'push') pushState().then(render); return; }
   const hj = t.closest('[data-hj]'); if (hj){ gHj = hj.dataset.hj; render(); return; }
   const gres = t.closest('[data-gres]'); if (gres){ const g = grades.find(x => x.id === gres.dataset.gres); if (g){ if (gres.dataset.v === 'untis') g.punkte = g.untis_punkte; g.konflikt = false; queue({k:'up', t:'grades', row: rowG(g)}); render(); toast(gres.dataset.v === 'untis' ? 'WebUntis-Note übernommen' : 'Deine Note bleibt'); } return; }
   const gr = t.closest('[data-g]'); if (gr){ openGrade(gr.dataset.g); return; }
