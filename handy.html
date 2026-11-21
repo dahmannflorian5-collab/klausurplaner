@@ -446,6 +446,7 @@ dialog{width:100%;max-width:100%;margin:auto 0 0;border-radius:20px 20px 0 0;max
       <label id="lArt">Art<select id="fArt"></select></label>
     </div>
     <label id="lMod">Modul<select id="fMod"></select></label>
+    <label id="lPru" hidden>Übung für Prüfung<select id="fPru"></select></label>
     <div class="r2">
       <label>Datum<input id="fDatum" type="date" required></label>
       <label>Von<input id="fVon" type="time"></label>
@@ -520,7 +521,7 @@ const MN = ['Januar','Februar','März','April','Mai','Juni','Juli','August','Sep
 const SUBJ = {Deutsch:'#8e4ec6',Mathe:'#a8692f',Englisch:'#3e63dd',Geschichte:'#c99a00',Ethik:'#d6409f',Informatik:'#0b97b3',Chemie:'#3d9a3d',VBWL:'#0f8a80',Kunst:'#c2562a',Sport:'#e08a1f',Physik:'#5b5bd6'};
 const RULES = [[/ethik/i,'Ethik'],[/chemie/i,'Chemie'],[/sport/i,'Sport'],[/englisch/i,'Englisch'],[/kunst/i,'Kunst'],[/volks|betriebs|vbw/i,'VBWL'],[/mathe/i,'Mathe'],[/geschicht/i,'Geschichte'],[/informatik/i,'Informatik'],[/deutsch/i,'Deutsch'],[/spanisch/i,'Spanisch'],[/wirtschaft und recht|^wr\b/i,'WR']];
 const TYP = {stunde:['Stunden','#3e63dd'],klausur:['Prüfungen','#e5484d'],aufgabe:['Aufgaben','#3d9a3d'],termin:['Termine','#64748b']};
-const ARTEN = {klausur:['Klausur','LK','Test','Kurzkontrolle','Mündliche Prüfung','Präsentation','Komplexe Leistung','Experiment','Rede','VorAbi'], aufgabe:['Hausaufgabe','Abgabe','Aufgabe'], termin:[]};
+const ARTEN = {klausur:['Klausur','LK','Test','Kurzkontrolle','Mündliche Prüfung','Präsentation','Komplexe Leistung','Experiment','Rede','VorAbi'], aufgabe:['Hausaufgabe','Abgabe','Aufgabe','Übung'], termin:[]};
 const LST = ['LK','Klausur','Abgabe','Präsentation','Komplexe Leistung','Experiment','Rede','VorAbi'];
 const I = {
   widget:'<rect x="3" y="3" width="8" height="8" rx="2"/><rect x="13" y="3" width="8" height="8" rx="2"/><rect x="3" y="13" width="18" height="8" rx="2"/>',
@@ -581,9 +582,9 @@ function loadCache(){ const c = lsj(ck(), {}); entries = c.entries || []; mods =
 function setSync(t){ $('sync').textContent = t; $('sync').hidden = !t; }
 let tt; function toast(m){ const t = $('toast'); t.textContent = m; t.classList.add('on'); clearTimeout(tt); tt = setTimeout(() => t.classList.remove('on'), 2200); }
 
-const normE = r => ({id:r.id, typ:r.typ, titel:r.titel, fach:r.fach || '', art:r.art || '', modul_id:r.modul_id || null, datum:r.datum, von:hm(r.von), bis:hm(r.bis), raum:r.raum || '', thema:r.thema || '', notiz:r.notiz || '', stand:r.stand || 'Nicht begonnen', ergebnis:r.ergebnis || '', done:!!r.done, vorlaeufig:!!r.vorlaeufig});
+const normE = r => ({id:r.id, typ:r.typ, titel:r.titel, fach:r.fach || '', art:r.art || '', modul_id:r.modul_id || null, datum:r.datum, von:hm(r.von), bis:hm(r.bis), raum:r.raum || '', thema:r.thema || '', notiz:r.notiz || '', stand:r.stand || 'Nicht begonnen', ergebnis:r.ergebnis || '', done:!!r.done, vorlaeufig:!!r.vorlaeufig, pruefung_id:r.pruefung_id || null});
 const normM = r => ({id:r.id, fach:r.fach, name:r.name, von:r.von, bis:r.bis, status:r.status, leistungen:r.leistungen || []});
-const rowE = e => ({id:e.id, user_id:uid, typ:e.typ, titel:e.titel, fach:e.fach || null, art:e.art || null, modul_id:e.modul_id || null, datum:e.datum, von:e.von || null, bis:e.bis || null, raum:e.raum || null, thema:e.thema || null, notiz:e.notiz || null, stand:e.stand || null, ergebnis:e.ergebnis || null, done:!!e.done, vorlaeufig:!!e.vorlaeufig});
+const rowE = e => ({id:e.id, user_id:uid, typ:e.typ, titel:e.titel, fach:e.fach || null, art:e.art || null, modul_id:e.modul_id || null, datum:e.datum, von:e.von || null, bis:e.bis || null, raum:e.raum || null, thema:e.thema || null, notiz:e.notiz || null, stand:e.stand || null, ergebnis:e.ergebnis || null, done:!!e.done, vorlaeufig:!!e.vorlaeufig, pruefung_id:e.pruefung_id || null});
 const rowM = m => ({id:m.id, user_id:uid, fach:m.fach, name:m.name, von:m.von, bis:m.bis, status:m.status, leistungen:m.leistungen});
 const modById = id => mods.find(m => m.id === id);
 
@@ -949,6 +950,7 @@ function drawDr(){
   else if (e.fach) rows.push(['Fach', esc(e.fach)]);
   const m = e.modul_id && modById(e.modul_id);
   if (m) rows.push(['Modul', `<button class="lnk" data-open="${m.id}">${esc(m.name)}</button>`]);
+  const pk = pruOf(e); if (pk) rows.push(['Übung für', `<button class="lnk" data-open="${pk.id}">${esc((pk.art || 'Prüfung') + ': ' + pk.titel)}</button> <span style="color:var(--mut)">(${dshort(pk.datum)})</span>`]);
   if (e.thema) rows.push(['Thema', esc(e.thema)]);
   if (e.typ === 'klausur') rows.push(['Vorbereitung', `<select data-stand="${e.id}">${['Nicht begonnen','In Arbeit','Fertig'].map(o => `<option${o === e.stand ? ' selected' : ''}>${o}</option>`).join('')}</select>`]);
   if (e.ergebnis) rows.push(['Ergebnis', '<b>' + esc(e.ergebnis) + '</b>']);
@@ -965,12 +967,17 @@ function drawDr(){
   $('dr').innerHTML = `<div class="dhd" style="--c:${col(e)}"><div style="flex:1"><span class="pill" style="--c:${col(e)}"><i></i>${esc(lbl(e))}</span><h2>${esc(e.titel)}</h2></div><button class="icb" id="drx" aria-label="Schließen">×</button></div>
     <dl class="kv">${rows.map(r => `<dt>${r[0]}</dt><dd>${r[1]}</dd>`).join('')}</dl>${warn}
     ${e.notiz ? `<div class="sec"><h3>${e.typ === 'stunde' ? 'Notiz aus WebUntis' : 'Notiz'}</h3><p class="note ${e.typ === 'stunde' ? 'wun' : ''}">${esc(e.notiz)}</p></div>` : ''}
-    ${e.typ === 'stunde' && (e.vertretung || e.info || e.text) ? `<div class="sec"><h3>Weitere Hinweise</h3><p class="note">${[e.vertretung, e.info, e.text].filter(Boolean).map(esc).join('<br>')}</p></div>` : ''}${e.typ === 'stunde' ? '' : filesSec(e)}${foot}`;
+    ${e.typ === 'stunde' && (e.vertretung || e.info || e.text) ? `<div class="sec"><h3>Weitere Hinweise</h3><p class="note">${[e.vertretung, e.info, e.text].filter(Boolean).map(esc).join('<br>')}</p></div>` : ''}${e.typ === 'klausur' ? uebSec(e) : ''}${e.typ === 'stunde' ? '' : filesSec(e)}${foot}`;
   wireDr(e);
+  if ($('padd')) $('padd').onclick = () => openForm(null, {typ: 'aufgabe', art: 'Übung', fach: e.fach, modul_id: e.modul_id, pruefung_id: e.id, titel: 'Übung: ' + e.titel, datum: ymd(new Date()) <= e.datum ? ymd(new Date()) : e.datum});
   if (e.typ === 'stunde' && !e.untis){
     $('pedit').onclick = () => openLesson(plan.find(p => String(p.id) === String(e.pid)));
     $('pdel').onclick = ev => sure(ev, () => { plan = plan.filter(p => String(p.id) !== String(e.pid)); queue({k:'plan'}); closeDr(); render(); toast('Stunde gelöscht'); });
   }
+}
+function uebSec(k){
+  const us = entries.filter(u => u.pruefung_id === k.id).sort((a,b) => a.datum.localeCompare(b.datum)), dn = us.filter(u => u.done).length;
+  return `<div class="sec"><h3>Übungen${us.length ? ` <span style="color:var(--mut);font-weight:500">${dn}/${us.length} erledigt</span>` : ''} <button class="btn sm" id="padd">+ Übung</button></h3>${us.length ? us.map(t => `<div class="mrow ${t.done ? 'done' : ''}" data-id="${t.id}" style="--c:${col(t)}">${cbx(t)}<span>${esc(t.titel)}</span><small>${dshort(t.datum)}</small></div>`).join('') : '<p class="note" style="color:var(--mut)">Noch keine Übungen für diese Prüfung.</p>'}</div>`;
 }
 function drawMod(m){
   const ts = modTasks(m).sort((a,b) => a.datum.localeCompare(b.datum)), d1 = diff(m.bis), c = SUBJ[m.fach] || '#8b95a3';
@@ -1100,20 +1107,30 @@ function fillMods(fach, val){
   const subs = subjList().filter(s => (!fach || s === fach) && mods.some(m => m.fach === s));
   $('fMod').innerHTML = '<option value="">Kein Modul</option>' + subs.map(s => `<optgroup label="${esc(s)}">` + mods.filter(m => m.fach === s).sort((a,b) => a.von.localeCompare(b.von)).map(m => `<option value="${m.id}"${m.id === val ? ' selected' : ''}>${esc(m.name)}${diff(m.von) <= 0 && diff(m.bis) >= 0 ? ' (aktuell)' : ''}</option>`).join('') + '</optgroup>').join('');
 }
+function pruOf(e){ return e && e.pruefung_id ? entries.find(x => x.id === e.pruefung_id && x.typ === 'klausur') : null; }
+const isUeb = () => fty === 'aufgabe' && $('fArt').value === 'Übung';
+function fillPru(fach, val){
+  const ks = entries.filter(k => k.typ === 'klausur' && (k.id === val || ((!fach || k.fach === fach) && diff(k.datum) >= 0))).sort((a,b) => a.datum.localeCompare(b.datum));
+  $('fPru').innerHTML = '<option value="">Keine bestimmte Prüfung</option>' + ks.map(k => `<option value="${k.id}"${k.id === val ? ' selected' : ''}>${esc((k.art || 'Prüfung') + (k.fach && !fach ? ' ' + k.fach : '') + ': ' + k.titel)} · ${dshort(k.datum)}</option>`).join('');
+}
+function updPru(){ $('lPru').hidden = !isUeb(); }
 function setTy(t, art){
   fty = t; document.querySelectorAll('#tys button').forEach(b => b.setAttribute('aria-pressed', b.dataset.ty === t));
   const a = ARTEN[t]; $('lArt').hidden = !a.length; $('lThema').hidden = $('lErg').hidden = t !== 'klausur'; $('lMod').hidden = t === 'termin';
   $('fArt').innerHTML = a.map(x => `<option>${x}</option>`).join('') + (art && !a.includes(art) ? `<option>${esc(art)}</option>` : '');
   if (art) $('fArt').value = art;
+  updPru();
 }
-$('fFach').onchange = () => { const f = $('fFach').value, c = f && mods.some(m => m.fach === f) ? modCur(f) : null; fillMods(f, c ? c.id : ''); };
+$('fFach').onchange = () => { const f = $('fFach').value, c = f && mods.some(m => m.fach === f) ? modCur(f) : null; fillMods(f, c ? c.id : ''); const p = entries.find(x => x.id === $('fPru').value); fillPru(f, p && (!f || p.fach === f) ? p.id : ''); };
+$('fArt').onchange = updPru;
+$('fPru').onchange = () => { const k = entries.find(x => x.id === $('fPru').value); if (!k) return; if (k.fach && $('fFach').value !== k.fach){ $('fFach').value = k.fach; } fillMods($('fFach').value, k.modul_id || $('fMod').value); fillPru($('fFach').value, k.id); if (!$('fTitel').value.trim()) $('fTitel').value = 'Übung: ' + k.titel; };
 $('fMod').onchange = () => { const m = modById($('fMod').value); if (m && $('fFach').value !== m.fach){ $('fFach').value = m.fach; fillMods(m.fach, m.id); } };
 function openForm(e, pre){
   editId = e ? e.id : null; $('ft').textContent = e ? 'Eintrag bearbeiten' : 'Neuer Eintrag';
   const v = e || Object.assign({typ: page === 'pru' ? 'klausur' : 'aufgabe', datum: ymd(view === 'woche' && page === 'kal' ? cur : new Date())}, pre || {});
   $('fFach').innerHTML = '<option value="">Kein Fach</option>' + subjList().map(s => `<option>${esc(s)}</option>`).join('');
   setTy(v.typ, v.art); $('tys').hidden = !!e;
-  $('fTitel').value = v.titel || ''; $('fFach').value = v.fach || ''; fillMods(v.fach || '', v.modul_id || '');
+  $('fTitel').value = v.titel || ''; $('fFach').value = v.fach || ''; fillMods(v.fach || '', v.modul_id || ''); fillPru(v.fach || '', v.pruefung_id || ''); updPru();
   $('fDatum').value = v.datum || ''; $('fVon').value = v.von || ''; $('fBis').value = v.bis || ''; $('fRaum').value = v.raum || '';
   $('fThema').value = v.thema || ''; $('fNotiz').value = v.notiz || ''; $('fErg').value = v.ergebnis || ''; $('fFiles').value = ''; $('fLink').value = ''; $('fVl').checked = !!v.vorlaeufig;
   $('dlg').showModal();
@@ -1123,7 +1140,7 @@ $('f').addEventListener('submit', ev => {
   ev.preventDefault();
   const o = {titel: $('fTitel').value.trim(), fach: $('fFach').value, art: ARTEN[fty].length ? $('fArt').value : '', modul_id: fty === 'termin' ? null : ($('fMod').value || null),
     datum: $('fDatum').value, von: $('fVon').value, bis: $('fBis').value, raum: $('fRaum').value.trim(), notiz: $('fNotiz').value.trim(),
-    thema: fty === 'klausur' ? $('fThema').value.trim() : '', ergebnis: fty === 'klausur' ? $('fErg').value.trim() : '', vorlaeufig: $('fVl').checked};
+    thema: fty === 'klausur' ? $('fThema').value.trim() : '', ergebnis: fty === 'klausur' ? $('fErg').value.trim() : '', vorlaeufig: $('fVl').checked, pruefung_id: isUeb() ? ($('fPru').value || null) : null};
   if (!o.titel || !o.datum) return;
   const lk = $('fLink').value.trim(); if (lk && !normUrl(lk)){ toast('Der Link ist ungültig'); return; }
   if (o.bis && !o.von) o.bis = '';
